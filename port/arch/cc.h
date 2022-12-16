@@ -45,10 +45,10 @@ typedef int32_t sys_prot_t;
 #endif
 
 #ifndef LWIP_PLATFORM_ASSERT
-#define LWIP_PLATFORM_ASSERT(x) do {APPDEBUG_log_debug("Assertion \"%s\" failed at line %d in %s\r\n", \
+#define LWIP_PLATFORM_ASSERT(x) do {ESP32NET_LOG("Assertion \"%s\" failed at line %d in %s\r\n", \
                                      x, __LINE__, __FILE__); } while(0)
 
-#define LWIP_PLATFORM_DIAG(x) do {APPDEBUG_log_debug x;} while(0)
+#define LWIP_PLATFORM_DIAG(x) do {ESP32NET_LOG x;} while(0)
 
 #endif /* LWIP_PLATFORM_ASSERT */
 /* Define random number generator function */

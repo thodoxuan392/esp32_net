@@ -1,6 +1,7 @@
 #include "core/netif_core.h"
 #include "utils/netif_buffer.h"
 #include "utils/netif_string.h"
+#include "netif_def.h"
 
 static const char * at_response_table[] = {
     [NETIF_RESPONSE_OK] = "OK",
@@ -65,10 +66,11 @@ static void netif_core_process_response(){
  * @return true If OK
  * @return false If failed or timeout
  */
-bool netif_core_init(){
+netif_status_t netif_core_init(){
     // Cleanup Buffer
     netif_buffer_init(&buffer_4g);
     netif_buffer_init(&buffer_wifi_ethernet);
+    return NETIF_OK;
 }
 
 /**
@@ -77,9 +79,10 @@ bool netif_core_init(){
  * @return true If OK
  * @return false If failed
  */
-bool netif_core_run(){
+netif_status_t netif_core_run(){
     // Process Reponse from Module (4G or Wifi_Ethernet)
     netif_core_process_response();
+    return NETIF_OK;
 }
 
 /**
@@ -88,8 +91,9 @@ bool netif_core_run(){
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_core_deinit(){
+netif_status_t netif_core_deinit(){
     // Do something
+    return NETIF_OK;
 }
 
 /**

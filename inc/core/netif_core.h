@@ -4,6 +4,7 @@
 #include "stdbool.h"
 #include "stdint.h"
 #include "netif_opts.h"
+#include "netif_def.h"
 
 typedef enum{
     NETIF_RESPONSE_OK = 0,
@@ -40,26 +41,23 @@ typedef enum{
 /**
  * @brief Initialize Network Interface Core Stack
  * 
- * @return true If OK
- * @return false If failed or timeout
+ * @return netif_status_t Status of Process
  */
-bool netif_core_init();
+netif_status_t netif_core_init();
 
 /**
  * @brief Run Network Interface Core Stack in Supper Loop
  * 
- * @return true If OK
- * @return false If failed
+ * @return netif_status_t Status of Process
  */
-bool netif_core_run();
+netif_status_t netif_core_run();
 
 /**
  * @brief Deinitialize Network Interface Core Stack
  * 
- * @return true if OK
- * @return false if failed or timeout
+ * @return netif_status_t Status of Process
  */
-bool netif_core_deinit();
+netif_status_t netif_core_deinit();
 
 /**
  * @brief Check ATCMD is have response match with atcommand table

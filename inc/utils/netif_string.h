@@ -17,6 +17,4 @@
  */
 bool netif_string_is_receive_data(char *buffer , uint16_t buffer_len , const char * data);
 
-
-
 #endif //NETIF_STRING_H

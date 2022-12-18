@@ -6,6 +6,6 @@
 // Sent HTTP Post Request (url,length)
 #define NETIF_ATCMD_HTTP_POST "AT+HTTPCPOST=%s,%d\n"
 // Sent HTTP Put Request (url,length)
-#define NETIF_ATCMD_HTTP_POST "AT+HTTPCPUT=%s,%d\n"
+#define NETIF_ATCMD_HTTP_PUT "AT+HTTPCPUT=%s,%d\n"
 
 #endif //NET_ATCMD_HTTP_H

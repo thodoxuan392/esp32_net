@@ -3,12 +3,7 @@
 
 #include "stdbool.h"
 #include "stdint.h"
-
-typedef enum {
-    NETIF_HTTP_OPT_GET = 2,
-    NETIF_HTTP_OPT_POST =3,
-    NETIF_HTTP_OPT_PUT = 4
-}netif_http_opt_t;
+#include "netif_def.h"
 
 typedef enum{
     NETIF_HTTP_CONTENT_TYPE_APPLICATION_XWWWFORMURLENCODED = 0,
@@ -23,7 +18,6 @@ typedef enum{
 }netif_http_transport_type_t;
 
 typedef struct {
-    netif_http_opt_t opt;
     netif_http_content_type_t content_type;
     char * url;
     netif_http_content_type_t transport_type;
@@ -39,36 +33,51 @@ typedef struct {
  * @brief Initialize HTTP Apps 
  * 
  * @return true if OK
- * @return false if Fail or Timeout
+ * @return netif_status_t Status of Process
  */
-bool netif_http_init();
+netif_status_t netif_http_init();
 
 /**
- * @brief 
+ * @brief Run HTTP Stack in Super Loop, handle event, ...
  * 
- * @return true 
- * @return false 
+ * @return netif_status_t Status of Process
  */
-bool netif_http_run();
+netif_status_t netif_http_run();
 
 
 /**
  * @brief Deinitialize HTTP Apps 
  * 
- * @return true if OK
- * @return false if Fail or Timeout
+ * @return netif_status_t Status of Process
  */
-bool netif_http_deinit();
+netif_status_t netif_http_deinit();
 
 // Specific Function
 /**
- * @brief Send HTTP request, support GET, POST, PUT
+ * @brief Send HTTP GET request
  * 
- * @param request 
- * @return true if OK
- * @return false if fail or timeout
+ * @param request HTTP request
+ * @return netif_status_t Status of Process
  */
-bool netif_http_send_request(netif_http_request_t * request);
+netif_status_t netif_http_send_get_request(netif_http_request_t * request);
+
+
+/**
+ * @brief Send HTTP POST request
+ * 
+ * @param request HTTP request
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_http_send_post_request(netif_http_request_t * request);
+
+
+/**
+ * @brief Send HTTP PUT request
+ * 
+ * @param request HTTP request
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_http_send_put_request(netif_http_request_t * request);
 
 
 #endif

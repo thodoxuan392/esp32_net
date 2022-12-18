@@ -30,13 +30,13 @@ netif_status_t netif_ethernet_run(){
     if(netif_core_atcmd_is_responded(&at_response)){
         switch (at_response)
         {
-        case NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED:
+        case NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED:
             /* code */
             ethernet_connected = true;
             netif_core_atcmd_reset();
             return NETIF_OK;
             break;
-        case NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED:
+        case NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED:
             /* code */
             ethernet_connected = false;
             netif_core_atcmd_reset();
@@ -65,8 +65,50 @@ netif_status_t netif_ethernet_deinit();
  * @return netif_status_t NETIF_OK if OK, ...
  */
 netif_status_t netif_ethernet_is_connected(bool *connected){
-    *connected = ethernet_connected;
-    return NETIF_OK;
+    static uint8_t step = 0;
+    netif_core_response_t at_response;
+    uint8_t *data;
+    size_t data_size;
+    int size;
+    if(ethernet_connected = true){
+        *connected = ethernet_connected;
+        return NETIF_OK;
+    }else{
+    switch (step)
+        {
+        case 0:
+            // Send Connect to AP to Wifi Module
+            size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
+            netif_core_wifi_ethernet_output(at_message, size);
+            // Switch wait to Wait Disconnect AP Response
+            step = 1;
+            break;
+        case 1:
+            // Wait Disconnect AP Response
+            if(netif_core_atcmd_is_responded(&at_response)){
+                // Reset State
+                step = 1;
+                // Check AT Response
+                if(at_response == NETIF_RESPONSE_OK){
+                    // Get Connection Status
+                    netif_core_atcmd_get_data(&data , &data_size);
+                    // Handling to get status from data
+                    // TODO:
+                    *connected = true;
+                    netif_core_atcmd_reset();
+                    return NETIF_OK;
+                }else{
+                    // Donot use data from response -> Clean Core Buffer
+                    netif_core_atcmd_reset();
+                    return NETIF_FAIL;
+                }
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    return NETIF_IN_PROCESS;
 }
 
 /**
@@ -82,11 +124,12 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
+    int size;
     switch (step)
     {
     case 0:
         // Send Connect to AP to Ethernet Module
-        int size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
+        size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
         netif_core_wifi_ethernet_output(at_message, size);
         // Switch wait to Wait Disconnect AP Response
         step = 1;
@@ -129,11 +172,12 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
+    int size;
     switch (step)
     {
     case 0:
         // Send Connect to AP to Ethernet Module
-        int size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_MAC);
+        size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_MAC);
         netif_core_wifi_ethernet_output(at_message, size);
         // Switch wait to Wait Disconnect AP Response
         step = 1;

@@ -9,15 +9,27 @@
 
 #include "stdint.h"
 #include "netif_opts.h"
+#include "netif_def.h"
 
-bool netif_init();
+/**
+ * @brief Init Network Interface
+ * 
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_init();
 
-bool netif_run();
+/**
+ * @brief Run Network Interface in Super Loop
+ * 
+ * @return netif_status_t 
+ */
+netif_status_t netif_run();
 
-bool netif_deinit();
-
-bool netif_input(uint8_t * data, size_t data_len);
-
-bool netif_output(uint8_t *data, size_t data_len);
+/**
+ * @brief Deinit Network Interface
+ * 
+ * @return netif_status_t 
+ */
+netif_status_t netif_deinit();
 
 #endif // NETIF_H

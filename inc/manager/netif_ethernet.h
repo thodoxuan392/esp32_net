@@ -1,6 +1,7 @@
 #ifndef NETIF_ETHERNET_H
 #define NETIF_ETHERNET_H
 
+#include "stdio.h"
 #include "stdbool.h"
 #include "netif_def.h"
 

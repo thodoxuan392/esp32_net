@@ -1,33 +1,31 @@
 #ifndef NETIF_4G_H
 #define NETIF_4G_H
 
+#include "stdio.h"
 #include "stdbool.h"
+#include "netif_def.h"
 
 
-// Generic Function
 /**
  * @brief Initialize 4G 
  * 
- * @return true If OK
- * @return false If failed or timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_init();
+netif_status_t netif_4g_init();
 
 /**
  * @brief Run 4G in Supper Loop
  * 
- * @return true If OK
- * @return false If failed
+ * @return netif_status_t State of Process
  */
-bool netif_4g_run();
+netif_status_t netif_4g_run();
 
 /**
  * @brief Deinitialize 4G
  * 
- * @return true If OK
- * @return false If failed or timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_deinit();
+netif_status_t netif_4g_deinit();
 
 
 // Specific Function
@@ -36,36 +34,32 @@ bool netif_4g_deinit();
  * 
  * @param imei Pointer to Imei String Buffer
  * @param imei_max_size Max Size Imei String Buffer
- * @return true If OK
- * @return false If Failed or Timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_get_imei(char * imei, size_t imei_max_size);
+netif_status_t netif_4g_get_imei(char * imei, size_t imei_max_size);
 
 /**
  * @brief Send Message to Other Phone
  * 
  * @param phone_number Phone Number of Target Sim 
  * @param message Message Sent
- * @return true If OK
- * @return false If Failed or Timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_send_sms(char * phone_number, char * message);
+netif_status_t netif_4g_send_sms(char * phone_number, char * message);
 
 /**
  * @brief Get 4G Status Connection
  * 
- * @return true If 4G Connected
- * @return false If failed or timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_is_connected();
+netif_status_t netif_4g_is_connected(bool *connected);
 
 /**
  * @brief Get 4G Internet Status Connection
  * 
- * @return true If 4G internet is connected
- * @return false If failed or timeout
+ * @return netif_status_t State of Process
  */
-bool netif_4g_is_internet_connected();
+netif_status_t netif_4g_is_internet_connected(bool *connected);
 
 
 

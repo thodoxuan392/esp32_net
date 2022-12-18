@@ -2,6 +2,8 @@
 #define NETIF_ETHERNET_H
 
 #include "stdbool.h"
+#include "netif_def.h"
+
 
 /**
  * @brief Initialize Ethernet Stack
@@ -9,7 +11,7 @@
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_ethernet_init();
+netif_status_t netif_ethernet_init();
 
 /**
  * @brief Run Ethernet Stack in Supper Loop, handle event,...
@@ -17,7 +19,7 @@ bool netif_ethernet_init();
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_ethernet_run();
+netif_status_t netif_ethernet_run();
 
 /**
  * @brief Deinitialize Ethernet Stack
@@ -25,7 +27,17 @@ bool netif_ethernet_run();
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_ethernet_deinit();
+netif_status_t netif_ethernet_deinit();
+
+
+/**
+ * @brief Check Ethernet Connected
+ * 
+ * @param connected Pointer to connected, if connected -> connected = true else false
+ * @return netif_status_t NETIF_OK if OK, ...
+ */
+netif_status_t netif_ethernet_is_connected(bool *connected);
+
 
 /**
  * @brief Get Ethernet IP Address 
@@ -35,7 +47,7 @@ bool netif_ethernet_deinit();
  * @return true If Get IP OKe
  * @return false If Get Ip failed or Timeout
  */
-bool netif_ethernet_get_ip(char * ip, size_t ip_max_size);
+netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size);
 
 
 /**
@@ -46,6 +58,6 @@ bool netif_ethernet_get_ip(char * ip, size_t ip_max_size);
  * @return true 
  * @return false 
  */
-bool netif_ethernet_get_mac(char * mac, size_t mac_max_size);
+netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size);
 
 #endif //NETIF_ETHERNET_H

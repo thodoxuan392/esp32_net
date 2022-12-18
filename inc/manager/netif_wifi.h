@@ -3,16 +3,22 @@
 
 #include "stdbool.h"
 #include "stdint.h"
+#include "netif_def.h"
+
+#define SSID_LEN        64
+#define PASSWORD_LEN    128
+#define IP_ADDR_LEN     20
+#define MAC_ADDR_LEN    20
 
 
 // Generic Function
+
 /**
- * @brief Initialize Wifi Stack
+ * @brief Initialize 
  * 
- * @return true if OK
- * @return false if failed or timeout
+ * @return netif_status_t Status of Process
  */
-bool netif_wifi_init();
+netif_status_t netif_wifi_init();
 
 /**
  * @brief Run Wifi Stack in Supper loop, handle event, ...
@@ -20,7 +26,7 @@ bool netif_wifi_init();
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_wifi_run();
+netif_status_t netif_wifi_run();
 
 /**
  * @brief Deinitialize Wifi Stack
@@ -28,7 +34,7 @@ bool netif_wifi_run();
  * @return true if OK
  * @return false if failed
  */
-bool netif_wifi_deinit();
+netif_status_t netif_wifi_deinit();
 
 // Specific Function
 /**
@@ -40,7 +46,7 @@ bool netif_wifi_deinit();
  * @return true if connected
  * @return false if failed or timeout
  */
-bool netif_wifi_connect_ap(char *ssid, char * password, uint8_t auth_mode);
+netif_status_t netif_wifi_connect_ap(char *ssid, char * password);
 
 /**
  * @brief Disconnect from AP
@@ -48,7 +54,7 @@ bool netif_wifi_connect_ap(char *ssid, char * password, uint8_t auth_mode);
  * @return true If OK
  * @return false If failed or timeout
  */
-bool netif_wifi_disconnect_ap();
+netif_status_t netif_wifi_disconnect_ap();
 
 /**
  * @brief Check Connection Status of Wifi Status 
@@ -56,7 +62,7 @@ bool netif_wifi_disconnect_ap();
  * @return true If Station is connected to SoftAP
  * @return false If failed or timeout
  */
-bool netif_wifi_is_connected();
+netif_status_t netif_wifi_is_connected(bool *connected);
 
 /**
  * @brief Start SmartConfig 
@@ -64,7 +70,7 @@ bool netif_wifi_is_connected();
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_wifi_start_smartconfig();
+netif_status_t netif_wifi_start_smartconfig();
 
 /**
  * @brief Stop Smartconfig
@@ -72,7 +78,7 @@ bool netif_wifi_start_smartconfig();
  * @return true  If OK
  * @return false if failed or timeout
  */
-bool netif_wifi_stop_smartconfig();
+netif_status_t netif_wifi_stop_smartconfig();
 
 /**
  * @brief Get Ip Address of Wifi Station
@@ -82,7 +88,7 @@ bool netif_wifi_stop_smartconfig();
  * @return true if OK
  * @return false if failed or timeout
  */
-bool netif_wifi_get_ip(char *ip , size_t ip_max_size){
+netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size){
 
 }
 
@@ -94,6 +100,6 @@ bool netif_wifi_get_ip(char *ip , size_t ip_max_size){
  * @return true 
  * @return false 
  */
-bool netif_wifi_get_mac(char *mac , size_t mac_max_size);
+netif_status_t netif_wifi_get_mac(char *mac , size_t mac_max_size);
 
 #endif // NETIF_WIFI_H

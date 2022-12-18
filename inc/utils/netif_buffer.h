@@ -54,4 +54,13 @@ bool netif_buffer_pop(netif_buffer_t  * buffer, uint8_t * data, size_t data_size
  */
 bool netif_buffer_is_available(netif_buffer_t * buffer);
 
+/**
+ * @brief Peek Element at Index
+ * 
+ * @param buffer Pointer to Netif Buffer Object
+ * @param idx Index of Data in buffer->buffer
+ * @return uint8_t* Pointer to Data[index]
+ */
+uint8_t* netif_buffer_peek_idx(netif_buffer_t * buffer, size_t idx);
+
 #endif

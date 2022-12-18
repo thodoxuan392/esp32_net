@@ -44,6 +44,11 @@
     #define NETIF_WIFI_ETHERNET_OUTPUT(data,datasize)   (void)NULL
 #endif
 
+// Core Buffer to handle response
 #define NETIF_CORE_BUFFER_SIZE          2048
+
+// AT Command Buffer to send AT Command
+#define NETIF_ATCMD_BUFFER_SIZE             1024
+#define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
 
 #endif //NETIF_OPTS_H

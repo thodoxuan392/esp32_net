@@ -61,6 +61,33 @@ bool netif_core_run();
  */
 bool netif_core_deinit();
 
+/**
+ * @brief Check ATCMD is have response match with atcommand table
+ * 
+ * @param response Pointer to response
+ * @return true if have response
+ * @return false if not
+ */
+bool netif_core_atcmd_is_responded(netif_core_response_t* response);
+
+/**
+ * @brief Get Data if have at response
+ * 
+ * @param data Pointer to data*, Get buffer Pointer of Core Buffer
+ * @param data_size Get Size
+ * @return true if OK
+ * @return false if failed
+ */
+bool netif_core_atcmd_get_data(uint8_t **data, size_t * data_size);
+
+/**
+ * @brief Reset AT Command Buffer and Response Result
+ * 
+ * @return true if Ok
+ * @return false if false
+ */
+bool netif_core_atcmd_reset();
+
 
 // Specific Function
 

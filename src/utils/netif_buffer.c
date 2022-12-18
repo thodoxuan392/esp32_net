@@ -65,3 +65,19 @@ bool netif_buffer_is_available(netif_buffer_t * buffer){
     }
     return false;
 }
+
+
+/**
+ * @brief Check Buffer is available or not
+ * 
+ * @param buffer Pointer to buffer
+ * @return true if buffer available
+ * @return false if buffer not available
+ */
+uint8_t* netif_buffer_peek_idx(netif_buffer_t * buffer, size_t idx){
+    if(idx <0 || idx > BUFFER_MAX_SIZE ){
+        return NULL;
+    }
+    return &buffer->buffer[idx];
+}
+

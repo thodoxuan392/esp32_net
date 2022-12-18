@@ -6,25 +6,16 @@
 #include "string.h"
 
 
-bool isReceiveData(char *buffer , uint16_t buffer_len , const char * data){
-	if(buffer == NULL || data == NULL){
-		return false;
-	}
-	uint16_t data_len = strlen(data);
-	uint16_t actual_buffer_len = strlen(buffer);
-	// Validate valid buffer
-	if(actual_buffer_len == 0 || actual_buffer_len < buffer_len || data_len == 0){
-		return false;
-	}
-	else{
-		for (uint16_t index = 0; index < data_len; index++) {
-			if(buffer[buffer_len -data_len + index] != data[index]){
-				return false;
-			}
-		}
-	}
-	return true;
-}
+/**
+ * @brief Compare Buffer with Len and Data String from the end of buffer to start of Buffer
+ * 
+ * @param buffer Pointer to buffer 
+ * @param buffer_len Buffer Len
+ * @param data String
+ * @return true if Matched
+ * @return false if not Matched
+ */
+bool netif_string_is_receive_data(char *buffer , uint16_t buffer_len , const char * data);
 
 
 

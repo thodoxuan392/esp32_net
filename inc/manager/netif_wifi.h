@@ -6,8 +6,28 @@
 
 
 // Generic Function
+/**
+ * @brief Initialize Wifi Stack
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
 bool netif_wifi_init();
+
+/**
+ * @brief Run Wifi Stack in Supper loop, handle event, ...
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
 bool netif_wifi_run();
+
+/**
+ * @brief Deinitialize Wifi Stack
+ * 
+ * @return true if OK
+ * @return false if failed
+ */
 bool netif_wifi_deinit();
 
 // Specific Function
@@ -53,14 +73,6 @@ bool netif_wifi_start_smartconfig();
  * @return false if failed or timeout
  */
 bool netif_wifi_stop_smartconfig();
-
-/**
- * @brief Enable Auto Reconnect to SoftAP
- * 
- * @return true if OK
- * @return false if failed or timeout
- */
-bool netif_wifi_enable_auto_reconnect();
 
 /**
  * @brief Get Ip Address of Wifi Station

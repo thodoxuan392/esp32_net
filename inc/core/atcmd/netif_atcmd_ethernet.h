@@ -1,0 +1,9 @@
+#ifndef NETIF_ATCMD_ETHERNET_H
+#define NETIF_ATCMD_ETHERNET_H
+
+// Get IP Address
+#define NETIF_ATCMD_ETHERNET_GET_IP     "AT+CIPETH?\n"
+// Get Mac Address
+#define NETIF_ATCMD_ETHERNET_GET_MAC    "AT+CIPETHMAC?\n"
+
+#endif //NETIF_ATCMD_ETHERNET_H

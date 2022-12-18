@@ -33,21 +33,48 @@ typedef struct{
     void (*on_subcribe)(uint8_t result);
     void (*on_connect)(uint8_t result);
     void (*on_disconnect)(uint8_t result);
-}netif_mqtt_config_t;
+}netif_mqtt_client_t;
 
 
 
-// Generic Function
+/**
+ * @brief Inittialize MQTT Stack 
+ * 
+ * @return true if Ok
+ * @return false if failed or timeout
+ */
 bool netif_mqtt_init();
-bool netif_mqtt_loop();
+
+/**
+ * @brief Run MQTT Stack in supper loop, handle even, ...
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
+bool netif_mqtt_run();
+
+/**
+ * @brief Deinitialize MQTT Stack
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
+bool netif_mqtt_deinit();
 
 // Specific Function
-bool netif_mqtt_config();
-bool netif_mqtt_connect();
-bool netif_mqtt_publish();
-bool netif_mqtt_subcribe();
-bool netif_mqtt_unsubcribe();
-bool netif_mqtt_is_connected();
-bool netif_mqtt_disconnect();
+/**
+ * @brief Config MQTT Client
+ * 
+ * @param mqtt_config Mqtt Client Config refer @netif_mqtt_client_t
+ * @return true if OK
+ * @return false if failed or timeout
+ */
+bool netif_mqtt_config(netif_mqtt_client_t * client);
+bool netif_mqtt_connect(netif_mqtt_client_t * client);
+bool netif_mqtt_disconnect(netif_mqtt_client_t * client);
+bool netif_mqtt_subcribe(netif_mqtt_client_t * client, char * topic , uint8_t qos);
+bool netif_mqtt_unsubcribe(netif_mqtt_client_t * client, char *topic);
+bool netif_mqtt_publish(netif_mqtt_client_t * client, char * topic , char * payload, uint8_t qos, uint8_t retain);
+bool netif_mqtt_is_connected(netif_mqtt_client_t * client);
 
 #endif

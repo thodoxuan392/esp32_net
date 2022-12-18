@@ -1,8 +1,40 @@
 #ifndef NETIF_CORE_H
 #define NETIF_CORE_H
 
-
+#include "stdbool.h"
+#include "stdint.h"
 #include "netif_opts.h"
+
+typedef enum{
+    NETIF_RESPONSE_OK = 0,
+    NETIF_RESPONSE_ERROR,
+    NETIF_RESPONSE_INPUT,
+    // WifiEthernet Generic
+    NETIF_WIFI_ETHERNET_RESPONSE_SEND_OK,
+    NETIF_WIFI_ETHERNET_RESPONSE_SEND_FAIL,
+    NETIF_WIFI_ETHERNET_RESPONSE_SET_OK,
+    NETIF_WIFI_ETHERNET_REPORT_READY,
+    NETIF_WIFI_ETHERNET_REPORT_BUSY,
+    NETIF_WIFI_ETHERNET_REPORT_FORCE_RESTART,
+    // Smart Config
+    NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE,
+    NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_INFO,
+    NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_CONNECTED_AP,
+    // Wifi
+    NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED,
+    NETIF_WIFI_ETHERNET_REPORT_WIFI_GOT_IP,
+    NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED,
+    // Ethernet
+    NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED,
+    NETIF_WIFI_ETHERNET_REPORT_ETH_GOT_IP,
+    NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED,
+    // Wifi_Ethernet MQTT
+    NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED,
+    NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED,
+    NETIF_WIFI_ETHERNET_REPORT_MQTT_SUB_OK,
+    NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK,
+    NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL,
+}netif_core_response_t;
 
 // Generic Function
 /**
@@ -31,17 +63,45 @@ bool netif_core_deinit();
 
 
 // Specific Function
+
 /**
- * @brief 
+ * @brief Input data from 4G Module to Netif Core
  * 
- * @param data 
- * @param data_size 
- * @return true 
- * @return false 
+ * @param data Pointer of data
+ * @param data_size Data size
+ * @return true If OK
+ * @return false If failed or timeout
  */
 bool netif_core_4g_input(uint8_t* data, size_t data_size);
+
+/**
+ * @brief Output data from Netif Core, write to 4G Module
+ * 
+ * @param data Pointer to data
+ * @param data_size Data Size
+ * @return true if OK
+ * @return false if Failed
+ */
 bool netif_core_4g_output(uint8_t* data, size_t data_size);
+
+/**
+ * @brief Input data from Wifi-Ethernet Device to Netif Core Stack
+ * 
+ * @param data Pointer to data
+ * @param data_size Data Size
+ * @return true if OK
+ * @return false if Failed or Timeout
+ */
 bool netif_core_wifi_ethernet_input(uint8_t* data, size_t data_size);
+
+/**
+ * @brief Output data from Netif Core Stack, write to Wifi Ethernet Module
+ * 
+ * @param data Pointer to Data
+ * @param data_size Data Size
+ * @return true If OK
+ * @return false If Failed or Timeout
+ */
 bool netif_core_wifi_ethernet_output(uint8_t * data, size_t data_size);
 
 #endif

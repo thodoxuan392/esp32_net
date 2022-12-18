@@ -3,13 +3,30 @@
 
 #include "stdbool.h"
 
-
-// Generic Function
+/**
+ * @brief Initialize Ethernet Stack
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
 bool netif_ethernet_init();
+
+/**
+ * @brief Run Ethernet Stack in Supper Loop, handle event,...
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
 bool netif_ethernet_run();
+
+/**
+ * @brief Deinitialize Ethernet Stack
+ * 
+ * @return true if OK
+ * @return false if failed or timeout
+ */
 bool netif_ethernet_deinit();
 
-// Specific Function
 /**
  * @brief Get Ethernet IP Address 
  * 

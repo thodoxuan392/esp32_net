@@ -35,13 +35,40 @@ typedef struct {
     void (*on_put)(uint8_t result);
 }netif_http_request_t;
 
-
-// Generic Function
+/**
+ * @brief Initialize HTTP Apps 
+ * 
+ * @return true if OK
+ * @return false if Fail or Timeout
+ */
 bool netif_http_init();
-bool netif_http_loop();
+
+/**
+ * @brief 
+ * 
+ * @return true 
+ * @return false 
+ */
+bool netif_http_run();
+
+
+/**
+ * @brief Deinitialize HTTP Apps 
+ * 
+ * @return true if OK
+ * @return false if Fail or Timeout
+ */
+bool netif_http_deinit();
 
 // Specific Function
-bool netif_http_send_request()
+/**
+ * @brief Send HTTP request, support GET, POST, PUT
+ * 
+ * @param request 
+ * @return true if OK
+ * @return false if fail or timeout
+ */
+bool netif_http_send_request(netif_http_request_t * request);
 
 
 #endif

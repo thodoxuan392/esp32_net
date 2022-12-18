@@ -1,6 +1,10 @@
 #ifndef NETIF_BUFFER_H
 #define NETIF_BUFFER_H
 
+#include "stdio.h"
+#include "stdbool.h"
+#include "stdint.h"
+
 #define BUFFER_MAX_SIZE     2048
 
 typedef struct {
@@ -40,5 +44,14 @@ bool netif_buffer_push(netif_buffer_t * buffer, uint8_t * data, size_t data_size
  */
 bool netif_buffer_pop(netif_buffer_t  * buffer, uint8_t * data, size_t data_size);
 
+
+/**
+ * @brief Check Buffer is available or not
+ * 
+ * @param buffer Pointer to buffer
+ * @return true if buffer available
+ * @return false if buffer not available
+ */
+bool netif_buffer_is_available(netif_buffer_t * buffer);
 
 #endif

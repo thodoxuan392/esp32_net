@@ -33,6 +33,13 @@ netif_status_t netif_manager_run();
 netif_status_t netif_manager_deinit();
 
 /**
+ * @brief Check Internet Connection
+ *
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_manager_is_connect_to_internet(bool *connected);
+
+/**
  * @brief Check if is running 4G Mode
  * 
  * @return netif_status_t Status of Process

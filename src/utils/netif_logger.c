@@ -34,7 +34,7 @@ static const char * level_str[] = {
 		"ALL"
 };
 
-static netif_log_level_t level = NETIF_LOG_OFF;
+static netif_log_level_t level = NETIF_LOG_ALL;
 
 static char * level_to_color(netif_log_level_t level){
 	return color_str[level];

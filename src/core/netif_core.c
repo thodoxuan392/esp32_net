@@ -1,6 +1,7 @@
 #include "core/netif_core.h"
 #include "utils/netif_buffer.h"
 #include "utils/netif_string.h"
+#include "utils/netif_logger.h"
 #include "netif_def.h"
 
 static const char * at_response_table[] = {
@@ -24,7 +25,7 @@ static const char * at_response_table[] = {
     [NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED] = "+ETH_DISCONNECTED",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED] = "+MQTTCONNECTED",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED] = "+MQTTDISCONNECTED",
-    [NETIF_WIFI_ETHERNET_REPORT_MQTT_SUB_OK] = "+MQTTSUBRECV",
+    [NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK] = "+MQTTSUBRECV",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK] = "+MQTTPUB:OK",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL] = "+MQTTPUB:FAIL",
 };
@@ -51,7 +52,8 @@ static void netif_core_process_response(){
             if (netif_string_is_receive_data(core_wifi_ethernet_buffer,
                                                 core_wifi_ethernet_buffer_index,
                                                 at_response_table[i])){
-                // Match with index i 
+                // Match with index i
+            	netif_log_info("%s", at_response_table[i]);
                 at_response = (netif_core_response_t)i;
                 at_response_indication = true;
             }
@@ -67,6 +69,7 @@ static void netif_core_process_response(){
  * @return false If failed or timeout
  */
 netif_status_t netif_core_init(){
+	netif_log_info("Netif Core Init");
     // Cleanup Buffer
     netif_buffer_init(&buffer_4g);
     netif_buffer_init(&buffer_wifi_ethernet);
@@ -80,8 +83,19 @@ netif_status_t netif_core_init(){
  * @return false If failed
  */
 netif_status_t netif_core_run(){
+    uint8_t data;
     // Process Reponse from Module (4G or Wifi_Ethernet)
     netif_core_process_response();
+    // Check Input from 4G Module
+    if(NETIF_4G_INPUT_IS_AVAILABLE()){
+        data = NETIF_4G_INPUT();
+        netif_buffer_push(&buffer_4g,&data,1);
+    }
+    // Check Input from Wifi/Ethernet Module
+    if(NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()){
+        data = NETIF_WIFI_ETHERNET_INPUT();
+        netif_buffer_push(&buffer_wifi_ethernet,&data,1);
+    }
     return NETIF_OK;
 }
 
@@ -92,6 +106,7 @@ netif_status_t netif_core_run(){
  * @return false if failed or timeout
  */
 netif_status_t netif_core_deinit(){
+	netif_log_info("Netif Core Deinit");
     // Do something
     return NETIF_OK;
 }

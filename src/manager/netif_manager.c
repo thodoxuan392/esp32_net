@@ -2,6 +2,7 @@
 #include "manager/netif_4g.h"
 #include "manager/netif_ethernet.h"
 #include "manager/netif_wifi.h"
+#include "utils/netif_logger.h"
 #include "netif_opts.h"
 
 static netif_manager_state_t netif_manager_state = NETIF_MANAGER_DISCONNECTED_MODE;
@@ -18,8 +19,7 @@ static void netif_manager_wifi_ethernet_mode();
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_manager_init(){
-    // Init 4G
-    // Init Wifi
+    netif_log_info("Netif manager init");
     return NETIF_OK;
 }
 
@@ -63,6 +63,20 @@ netif_status_t netif_manager_deinit(){
 /**
  * @brief Check if is running 4G Mode
  * 
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_manager_is_connect_to_internet(bool *connected){
+    if(netif_manager_state != NETIF_MANAGER_DISCONNECTED_MODE){
+        *connected = true;
+    }else{
+        *connected = false;
+    }
+    return NETIF_OK;
+}
+
+/**
+ * @brief Check if is running 4G Mode
+ *
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_manager_is_4g_mode(bool *connected){
@@ -117,7 +131,7 @@ static void netif_manager_disconnect_mode(){
     bool _wifi_connected = false;
     bool _ethernet_connected = false;
     // If Previous time to Current time is less than 10 seconds -> Return
-    if(NETIF_GET_TIME_MS() - previous_time < 10 * 1000){
+    if(NETIF_GET_TIME_MS() - previous_time < NETIF_MANAGER_RETRY_INTERVAL){
         return;
     }
     // Assign Previous time = Current Time
@@ -126,6 +140,7 @@ static void netif_manager_disconnect_mode(){
     {
     case 0:
         //Check 4G Connection
+    	netif_log_info("Check 4G Connection");
         ret = netif_4g_is_connected(&_4g_connected);
         if(ret == NETIF_OK){
             // If 4G have Connection -> Switch to Run 4G Mode
@@ -141,6 +156,7 @@ static void netif_manager_disconnect_mode(){
         break;
     case 1:
         // Check Ethernet Connection
+    	netif_log_info("Check Ethernet Connection");
         ret = netif_ethernet_is_connected(&_ethernet_connected);
         if(ret == NETIF_OK){
             //If Ethernet have Connection -> Switch to Ethernet-Wifi Mode
@@ -152,10 +168,13 @@ static void netif_manager_disconnect_mode(){
             else{
                 step = 2;
             }
+        }else if(ret == NETIF_FAIL){
+        	step = 2;
         }
         break;
     case 2:
         // Check Wifi Connection
+    	netif_log_info("Check Wifi Connection");
         ret = netif_wifi_is_connected(&_wifi_connected);
         if(ret == NETIF_OK){
             if(_wifi_connected){
@@ -164,18 +183,21 @@ static void netif_manager_disconnect_mode(){
             }else{
                 step = 3;
             }
+        }else if(ret == NETIF_FAIL){
+        	step = 3;
         }
         break;
     case 3:
         // Run Wifi as Station Mode
+    	netif_log_info("Run Wifi as Station Mode");
         ret = netif_wifi_station_mode();
         if(ret == NETIF_OK){
-            netif_manager_state = NETIF_MANAGER_WIFI_ETHERNET_MODE;
             step = 4;
         }
         break;
     case 4:
-        // Run Wifi as Station Mode
+        // Start Smartconfig
+    	netif_log_info("Start Smartconfig");
         ret = netif_wifi_start_smartconfig();
         if(ret == NETIF_OK){
             netif_manager_state = NETIF_MANAGER_WIFI_ETHERNET_MODE;
@@ -202,7 +224,7 @@ static void netif_manager_4g_mode(){
     bool _wifi_connected = false;
     bool _ethernet_connected = false;
     // If Previous time to Current time is less than 10 seconds -> Return
-    if(NETIF_GET_TIME_MS() - previous_time < 10 * 1000){
+    if(NETIF_GET_TIME_MS() - previous_time < NETIF_MANAGER_RETRY_INTERVAL){
         return;
     }
     // Assign Previous time = Current Time
@@ -242,7 +264,7 @@ static void netif_manager_wifi_ethernet_mode(){
     bool _wifi_connected = false;
     bool _ethernet_connected = false;
     // If Previous time to Current time is less than 10 seconds -> Return
-    if(NETIF_GET_TIME_MS() - previous_time < 10 * 1000){
+    if(NETIF_GET_TIME_MS() - previous_time < NETIF_MANAGER_RETRY_INTERVAL){
         return;
     }
     // Assign Previous time = Current Time

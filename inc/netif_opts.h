@@ -24,24 +24,33 @@
 #endif
 
 // Port 4G INOUT to UART
-#define NETIF_4G_INPUT(data,data_size)     Sim3g_Receive(data, data_size)
-#ifndef NETIF_4G_INPUT(data,data_size)
-    #define NETIF_4G_INPUT(data,datasize)               (void)NULL
+#ifndef NETIF_4G_INPUT_IS_AVAILABLE()
+    #define NETIF_4G_INPUT_IS_AVAILABLE()             0
 #endif
 
-#define NETIF_4G_OUTPUT(data,data_size)    Sim3g_Transmit(data, data_size)
+#ifndef NETIF_4G_INPUT()
+    #define NETIF_4G_INPUT()               0
+#endif
+
 #ifndef NETIF_4G_OUTPUT(data,data_size)
     #define NETIF_4G_OUTPUT(data,datasize)              (void)NULL
 #endif
 
 
 // Port WIFI-ETHERNET INOUT to UART
-#ifndef NETIF_WIFI_ETHERNET_INPUT(data,data_size)
-    #define NETIF_WIFI_ETHERNET_INPUT(data,datasize)    (void)NULL
+#define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
+#ifndef NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()    
+    #define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            0
 #endif
 
+#define NETIF_WIFI_ETHERNET_INPUT()                         Uart1_Read_Received_Buffer()
+#ifndef NETIF_WIFI_ETHERNET_INPUT() 
+    #define NETIF_WIFI_ETHERNET_INPUT()                         0
+#endif
+
+#define NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
 #ifndef NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)
-    #define NETIF_WIFI_ETHERNET_OUTPUT(data,datasize)   (void)NULL
+    #define NETIF_WIFI_ETHERNET_OUTPUT(data,datasize)           (void)NULL
 #endif
 
 // Core Buffer to handle response
@@ -50,5 +59,8 @@
 // AT Command Buffer to send AT Command
 #define NETIF_ATCMD_BUFFER_SIZE             1024
 #define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
+
+// Network Retry Interval
+#define NETIF_MANAGER_RETRY_INTERVAL		3000	//3s
 
 #endif //NETIF_OPTS_H

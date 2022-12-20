@@ -10,6 +10,8 @@
 #include "stdint.h"
 #include "netif_opts.h"
 #include "netif_def.h"
+#include "apps/netif_http.h"
+#include "apps/netif_mqtt.h"
 
 /**
  * @brief Init Network Interface

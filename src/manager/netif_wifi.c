@@ -46,22 +46,39 @@ netif_status_t netif_wifi_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED:
+        	netif_log_info("Wifi Connected");
             /* code */
             wifi_connected = true;
             netif_core_atcmd_reset();
             break;
+        case NETIF_WIFI_ETHERNET_REPORT_WIFI_GOT_IP:
+        	netif_log_info("Wifi Got IP");
+        	// Get data from Core Buffer
+			netif_core_atcmd_get_data(&data,&data_size);
+			// Get IP
+			// TODO:
+            netif_core_atcmd_reset();
+            break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED:
+        	netif_log_info("Wifi Disconnected");
             /* code */
             wifi_connected = false;
             netif_core_atcmd_reset();
             break;
+        case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE:
+        	netif_log_info("Smartconfig Type");
+            // Reset ATCMD
+            netif_core_atcmd_reset();
+            break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_CONNECTED_AP:
+        	netif_log_info("Smartconfig connected");
             // Set flag smartconfig_done to true
             smartconfig_done = true;
             // Reset ATCMD
             netif_core_atcmd_reset();
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_INFO:
+        	netif_log_info("Smartconfig get info");
             smartconfig_done = true;
             // Get data from Core Buffer
             netif_core_atcmd_get_data(&data,&data_size);
@@ -224,7 +241,7 @@ netif_status_t netif_wifi_is_connected(bool * connected){
     uint8_t *data;
     size_t data_size;
     int size;
-    if(wifi_connected = true){
+    if(wifi_connected){
         *connected = wifi_connected;
         return NETIF_OK;
     }else{
@@ -248,7 +265,6 @@ netif_status_t netif_wifi_is_connected(bool * connected){
                     netif_core_atcmd_get_data(&data , &data_size);
                     // Handling to get status from data
                     // TODO:
-                    *connected = true;
                     netif_core_atcmd_reset();
                     return NETIF_OK;
                 }else{

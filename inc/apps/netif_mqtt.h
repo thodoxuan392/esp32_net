@@ -31,10 +31,10 @@ typedef struct{
     char * client_cert;
     char * client_key;
     // Callback function
-    void (*on_publish)(uint8_t result);
-    void (*on_subcribe)(uint8_t result);
     void (*on_connect)(uint8_t result);
     void (*on_disconnect)(uint8_t result);
+    void (*on_publish)(uint8_t result);
+    void (*on_message)(char *topic, char* payload);
 }netif_mqtt_client_t;
 
 

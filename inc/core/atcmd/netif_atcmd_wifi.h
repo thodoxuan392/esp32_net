@@ -8,7 +8,7 @@
 // Disconnect from AP
 #define NETIF_ATCMD_WIFI_DISCONNECT_AP "AT+CWQAP\n"
 // Check Wifi State
-#define NETIF_ATCMD_WIFI_GET_STATE  "AT+CWSTATE\n"
+#define NETIF_ATCMD_WIFI_GET_STATE  "AT+CWSTATE?\n"
 // Start Smartconfig
 #define NETIF_ATCMD_WIFI_START_SMARTCONFIG "AT+CWSTARTSMART\n"
 // Stop Smartconfig

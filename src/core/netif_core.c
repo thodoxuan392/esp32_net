@@ -25,7 +25,7 @@ static const char * at_response_table[] = {
     [NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED] = "+ETH_DISCONNECTED",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED] = "+MQTTCONNECTED",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED] = "+MQTTDISCONNECTED",
-    [NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK] = "+MQTTSUBRECV",
+    [NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK] = "+MQTTSUBRECV:",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK] = "+MQTTPUB:OK",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL] = "+MQTTPUB:FAIL",
 };
@@ -37,14 +37,19 @@ static netif_buffer_t buffer_wifi_ethernet;
 
 // Core buffer for handling response
 static uint8_t core_wifi_ethernet_buffer[BUFFER_MAX_SIZE];
-static uint8_t core_wifi_ethernet_buffer_index = 0;
+static uint16_t core_wifi_ethernet_buffer_index = 0;
 static bool at_response_indication= false;
 static netif_core_response_t at_response;
 
 // Internal Function
 static void netif_core_process_response(){
+	// If at_response is'not reset -> Ignore
+	if(at_response_indication == true){
+		return;
+	}
     if(netif_buffer_is_available(&buffer_wifi_ethernet)){
-        volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index++];
+        volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index];
+        core_wifi_ethernet_buffer_index = (core_wifi_ethernet_buffer_index+1) % BUFFER_MAX_SIZE;
         netif_buffer_pop(&buffer_wifi_ethernet,data_p,1);
         // Check Response buffer match with any in at reponse table
         for (size_t i = 0; i < at_response_table_size; i++)
@@ -53,9 +58,9 @@ static void netif_core_process_response(){
                                                 core_wifi_ethernet_buffer_index,
                                                 at_response_table[i])){
                 // Match with index i
-            	netif_log_info("%s", at_response_table[i]);
                 at_response = (netif_core_response_t)i;
                 at_response_indication = true;
+                break;
             }
         }
     }
@@ -134,7 +139,7 @@ bool netif_core_atcmd_is_responded(netif_core_response_t* response){
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data(uint8_t **data, size_t * data_size){
+bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size){
     if(at_response_indication){
         *data = core_wifi_ethernet_buffer;
         *data_size = core_wifi_ethernet_buffer_index;
@@ -143,15 +148,35 @@ bool netif_core_atcmd_get_data(uint8_t **data, size_t * data_size){
     return false;
 }
 
+
+/**
+ * @brief Get Data after the AT Reponse
+ *
+ * @param data Pointer to data*, Get buffer Pointer of Core Buffer
+ * @param data_size Get Size
+ * @return true if OK
+ * @return false if failed
+ */
+bool netif_core_atcmd_get_data_after(uint8_t *data){
+	if(netif_buffer_is_available(&buffer_wifi_ethernet)){
+		netif_buffer_pop(&buffer_wifi_ethernet,data,1);
+		return true;
+	}
+	return false;
+}
+
 /**
  * @brief Reset AT Command Buffer and Response Result
  * 
  * @return true if Ok
  * @return false if false
  */
-bool netif_core_atcmd_reset(){
+bool netif_core_atcmd_reset(bool reset_buffer){
+	if(reset_buffer){
+		core_wifi_ethernet_buffer_index = 0;
+		memset(core_wifi_ethernet_buffer,0,BUFFER_MAX_SIZE);
+	}
     at_response_indication = false;
-    core_wifi_ethernet_buffer_index = 0;
     return true;
 }
 

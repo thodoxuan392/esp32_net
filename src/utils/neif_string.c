@@ -19,3 +19,19 @@ bool netif_string_is_receive_data(char *buffer , uint16_t buffer_len , const cha
 	}
 	return true;
 }
+
+
+/**
+ * @brief Convert String to Interger
+ *
+ * @param buffer Pointer to buffer
+ * @param buffer_length Buffer Len
+ * @return true Interger
+ */
+uint16_t netif_string_to_int(char * buffer , uint16_t buffer_length){
+	uint16_t result = 0;
+	for (uint16_t var = 0; var < buffer_length; ++var) {
+		result = result*10 + (uint8_t)buffer[var] - 48;
+	}
+	return result;
+}

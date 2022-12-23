@@ -5,6 +5,8 @@
 #include "main.h"
 #include "app_uart.h"
 
+#define NETIF_LOG_LEVEL			NETIF_LOG_ALL
+
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
 #ifndef NETIF_GET_TIME_MS()         
@@ -60,7 +62,10 @@
 #define NETIF_ATCMD_BUFFER_SIZE             1024
 #define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
 
+// Network Apps Retry Interval
+#define NETIF_APPS_RETRY_INTERVAL			200	//3s
+
 // Network Retry Interval
-#define NETIF_MANAGER_RETRY_INTERVAL		3000	//3s
+#define NETIF_MANAGER_RETRY_INTERVAL		10000	//3s
 
 #endif //NETIF_OPTS_H

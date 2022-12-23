@@ -69,7 +69,7 @@ netif_status_t netif_http_send_get_request(netif_http_request_t * request){
             // Reset step
             step = 0;
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 // Switch to Send Post data
@@ -113,7 +113,7 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
         // Wait HTTP Post Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 // Wait for receive input indicator
@@ -128,7 +128,7 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
     case 2:
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_INPUT){
                 // Send Post data
@@ -150,7 +150,7 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
         // Wait HTTP Post Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_WIFI_ETHERNET_RESPONSE_SEND_OK){
                 // Reset step 

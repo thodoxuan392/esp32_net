@@ -35,14 +35,14 @@ netif_status_t netif_ethernet_run(){
         	netif_log_info("Ethernet connected");
             /* code */
             ethernet_connected = true;
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             return NETIF_OK;
             break;
         case NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED:
         	netif_log_info("Ethernet disconnected");
             /* code */
             ethernet_connected = false;
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             return NETIF_OK;
             break;
         default:
@@ -80,7 +80,9 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
     switch (step)
         {
         case 0:
-            // Send Connect to AP to Wifi Module
+        	// Clear All AT Response Before
+        	netif_core_atcmd_reset(true);
+            // Send Request Ethernet State to Module
             size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
             netif_core_wifi_ethernet_output(at_message, size);
             // Switch wait to Wait Disconnect AP Response
@@ -90,19 +92,19 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
             // Wait Disconnect AP Response
             if(netif_core_atcmd_is_responded(&at_response)){
                 // Reset State
-                step = 1;
+                step = 0;
                 // Check AT Response
                 if(at_response == NETIF_RESPONSE_OK){
                     // Get Connection Status
-                    netif_core_atcmd_get_data(&data , &data_size);
+                    netif_core_atcmd_get_data_before(&data , &data_size);
                     // Handling to get status from data
                     // TODO:
                     //*connected = true;
-                    netif_core_atcmd_reset();
+                    netif_core_atcmd_reset(false);
                     return NETIF_OK;
                 }else{
                     // Donot use data from response -> Clean Core Buffer
-                    netif_core_atcmd_reset();
+                    netif_core_atcmd_reset(false);
                     return NETIF_FAIL;
                 }
             }
@@ -141,11 +143,11 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer
-            netif_core_atcmd_get_data(&data, &data_size);
+            netif_core_atcmd_get_data_before(&data, &data_size);
             // Handle data to get IP
             // TODO: ...
             // Reset Core ATCMD buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -189,11 +191,11 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer
-            netif_core_atcmd_get_data(&data, &data_size);
+            netif_core_atcmd_get_data_before(&data, &data_size);
             // Handle data to get IP
             // TODO: ...
             // Reset Core ATCMD buffer
-            netif_core_atcmd_reset();
+            netif_core_atcmd_reset(false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;

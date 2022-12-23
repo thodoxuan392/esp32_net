@@ -2,7 +2,7 @@
 #define NETIF_ATCMD_MQTT_H
 
 // Client Configuration (link_id,scheme,client_id,username,password)
-#define NETIF_ATCMD_MQTT_CLIENT_CONFIG      "AT+MQTTUSERCFG=0,%d,%s,%s,%s\n"
+#define NETIF_ATCMD_MQTT_CLIENT_CONFIG      "AT+MQTTUSERCFG=0,%d,%s,%s,%s,0,0,\"\"\n"
 // Connect to MQTT Broker (link_id,host,port,reconnect)
 #define NETIF_ATCMD_MQTT_CONNECT    "AT+MQTTCONN=0,%s,%d,%d\n"
 // Disconnect from MQTT Broker

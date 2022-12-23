@@ -10,7 +10,7 @@
 #define NETIF_MQTT_TOPIC_LEN            128
 
 typedef struct{
-    uint8_t client_id;
+    char * client_id;
     // Endpoint
     char * host;
     uint16_t port;

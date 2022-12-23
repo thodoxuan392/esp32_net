@@ -17,4 +17,14 @@
  */
 bool netif_string_is_receive_data(char *buffer , uint16_t buffer_len , const char * data);
 
+
+/**
+ * @brief Convert String to Interger
+ *
+ * @param buffer Pointer to buffer
+ * @param buffer_length Buffer Len
+ * @return true Interger
+ */
+uint16_t netif_string_to_int(char * buffer , uint16_t buffer_length);
+
 #endif //NETIF_STRING_H

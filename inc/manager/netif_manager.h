@@ -8,7 +8,8 @@
 typedef enum{
     NETIF_MANAGER_DISCONNECTED_MODE,
     NETIF_MANAGER_4G_MODE,
-    NETIF_MANAGER_WIFI_ETHERNET_MODE,
+	NETIF_MANAGER_ETHERNET_MODE,
+    NETIF_MANAGER_WIFI_MODE,
 }netif_manager_state_t;
 
 /**
@@ -48,10 +49,18 @@ netif_status_t netif_manager_is_4g_mode(bool *connected);
 
 
 /**
- * @brief Check if is running Wifi/Ethernet Mode
+ * @brief Check if is running Ethernet Mode
  * 
  * @return netif_status_t Status of Process
  */
-netif_status_t netif_manager_is_wifi_ethernet_mode(bool *connected);
+netif_status_t netif_manager_is_ethernet_mode(bool *connected);
+
+
+/**
+ * @brief Check if is running Wifi Mode
+ *
+ * @return netif_status_t Status of Process
+ */
+netif_status_t netif_manager_is_wifi_mode(bool *connected);
 
 #endif //NETIF_MANAGER_H

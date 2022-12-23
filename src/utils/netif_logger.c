@@ -12,15 +12,14 @@
 static uint8_t log_buffer[NETIF_MAX_LOG_BUFFER];
 static uint8_t message_buffer[NETIF_MAX_LOG_BUFFER];
 
-static const char * color_str[] = {
-		"\x1B[0m",
-		"\x1B[31m",
-		"\x1B[32m",
-		"\x1B[33m",
-		"\x1B[34m",
-		"\x1B[35m",
-		"\x1B[36m",
-		"\x1B[37m"
+static const char * color_str[NETIF_LOG_ALL] = {
+		[NETIF_LOG_OFF] =  "\x1b[0m",
+		[NETIF_LOG_ERROR] = "\x1b[31m",		// RED
+		[NETIF_LOG_INFO] = "\x1b[32m",		// Green
+		[NETIF_LOG_WARN] =  "\x1b[33m",		// Yellow
+		[NETIF_LOG_TRACE] = "\x1b[34m",		// Blue
+		[NETIF_LOG_FATAL]  = "\x1b[35m",	// Magenta
+		[NETIF_LOG_DEBUG] = "\x1b[36m",		//Cyan
 };
 
 static const char * level_str[] = {
@@ -34,7 +33,7 @@ static const char * level_str[] = {
 		"ALL"
 };
 
-static netif_log_level_t level = NETIF_LOG_ALL;
+static netif_log_level_t level = NETIF_LOG_LEVEL;
 
 static char * level_to_color(netif_log_level_t level){
 	return color_str[level];

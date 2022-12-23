@@ -35,6 +35,9 @@ typedef enum{
     NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK,
     NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK,
     NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL,
+
+	//UNKNOWN
+	NETIF_RESPONSE_UNKNOWN
 }netif_core_response_t;
 
 // Generic Function
@@ -69,14 +72,25 @@ netif_status_t netif_core_deinit();
 bool netif_core_atcmd_is_responded(netif_core_response_t* response);
 
 /**
- * @brief Get Data if have at response
+ * @brief Get Data Before the AT Reponse
  * 
  * @param data Pointer to data*, Get buffer Pointer of Core Buffer
  * @param data_size Get Size
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data(uint8_t **data, size_t * data_size);
+bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size);
+
+
+/**
+ * @brief Get Data after the AT Reponse
+ *
+ * @param data Pointer to data*, Get buffer Pointer of Core Buffer
+ * @param data_size Get Size
+ * @return true if OK
+ * @return false if failed
+ */
+bool netif_core_atcmd_get_data_after(uint8_t *data);
 
 /**
  * @brief Reset AT Command Buffer and Response Result
@@ -84,7 +98,7 @@ bool netif_core_atcmd_get_data(uint8_t **data, size_t * data_size);
  * @return true if Ok
  * @return false if false
  */
-bool netif_core_atcmd_reset();
+bool netif_core_atcmd_reset(bool reset_buffer);
 
 
 // Specific Function

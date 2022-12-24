@@ -165,10 +165,13 @@ netif_status_t netif_mqtt_config(netif_mqtt_client_t * client){
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_mqtt_connect(netif_mqtt_client_t * client){
+	static char * mqtt_query_pattern = "+MQTTCONN:";
 	static uint8_t step = 0;
 	static uint8_t retry = 0;
 	static uint32_t last_time_sent = 0;
+	uint8_t connection_state;
 	netif_core_response_t response;
+	uint8_t* temp_ptr;
 	uint8_t *data;
 	size_t data_size;
     int size;
@@ -190,12 +193,24 @@ netif_status_t netif_mqtt_connect(netif_mqtt_client_t * client){
 					//Get AT Response Buffer
 					netif_core_atcmd_get_data_before(&data, &data_size);
 					// Check whether MQTT Client connect before or not: pattern +MQTTCONN:
-					if(strnstr(data,"+MQTTCONN:",data_size)){
-						// Connected before -> Return OK
-						netif_core_atcmd_reset(true);
-						step = 0;
-						retry = 0;
-						return NETIF_OK;
+					temp_ptr = strnstr(data,mqtt_query_pattern,data_size);
+					if(temp_ptr){
+						// Get Connection State
+						connection_state = temp_ptr[strlen(mqtt_query_pattern) + 2]; // 2 is offset from pattern to state
+						utils_log_info("connection_state %c", connection_state);
+						if(connection_state == '4' ||								// 4 is connected
+								connection_state == '5'||							// 5 is connected and not subcribed
+								connection_state == '6'){							// 6 is connected and subcribed
+							// Reset AT Response
+							netif_core_atcmd_reset(true);
+							step = 0;
+							retry = 0;
+							return NETIF_OK;
+						}
+						else{
+							retry = 0;
+							step = 2;
+						}
 					}else{
 						// Not connected before -> Step 2 to connect
 						retry = 0;

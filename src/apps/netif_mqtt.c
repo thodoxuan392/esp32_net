@@ -2,8 +2,8 @@
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_mqtt.h"
 #include "netif_opts.h"
-#include "../../lib/utils/utils_buffer.h"
-#include "../../lib/utils/utils_logger.h"
+#include "utils/utils_buffer.h"
+#include "utils/utils_logger.h"
 
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];

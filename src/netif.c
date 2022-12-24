@@ -3,8 +3,7 @@
 #include "apps/netif_mqtt.h"
 #include "manager/netif_manager.h"
 #include "core/netif_core.h"
-
-#include "../lib/utils/utils_logger.h"
+#include "utils/utils_logger.h"
 
 /**
  * @brief Init Network Interface
@@ -49,6 +48,8 @@ netif_status_t netif_run(){
  * @return netif_status_t 
  */
 netif_status_t netif_deinit(){
+    // Init Logger
+    utils_log_init(NETIF_LOG_LEVEL);
     if(netif_mqtt_deinit() != NETIF_OK){
         utils_log_error("netif_mqtt_deinit failed");
         return NETIF_FAIL;

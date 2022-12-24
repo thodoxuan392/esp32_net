@@ -3,7 +3,7 @@
 #include "manager/netif_ethernet.h"
 #include "manager/netif_wifi.h"
 #include "netif_opts.h"
-#include "../../lib/utils/utils_logger.h"
+#include "../utils/utils_logger.h"
 
 static netif_manager_state_t netif_manager_state = NETIF_MANAGER_DISCONNECTED_MODE;
 

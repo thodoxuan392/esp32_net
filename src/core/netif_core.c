@@ -1,8 +1,8 @@
 #include "core/netif_core.h"
 #include "netif_def.h"
-#include "../../lib/utils/utils_buffer.h"
-#include "../../lib/utils/utils_logger.h"
-#include "../../lib/utils/utils_string.h"
+#include "utils/utils_buffer.h"
+#include "utils/utils_logger.h"
+#include "utils/utils_string.h"
 
 static const char * at_response_table[] = {
     [NETIF_RESPONSE_OK] = "OK",

@@ -74,7 +74,7 @@ static void netif_core_process_response(){
  * @return false If failed or timeout
  */
 netif_status_t netif_core_init(){
-	netif_log_info("Netif Core Init");
+	netif_log_debug("Netif Core Init");
     // Cleanup Buffer
     netif_buffer_init(&buffer_4g);
     netif_buffer_init(&buffer_wifi_ethernet);

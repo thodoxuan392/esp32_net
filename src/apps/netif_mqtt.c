@@ -25,7 +25,7 @@ static netif_status_t netif_mqtt_parse_on_message();
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_mqtt_init(){
-	netif_log_info("Netif Mqtt Init");
+	netif_log_debug("Netif Mqtt Init");
     return NETIF_OK;
 }
 
@@ -101,7 +101,10 @@ netif_status_t netif_mqtt_deinit(){
 // Specific Function
 /**
  * @brief Config MQTT Client
- * 
+ * 0: Deinit Previous CLient
+ * 1: Waiting Response
+ * 2: Init new client
+ * 3: Waiting Response
  * @param mqtt_config Mqtt Client Config refer @netif_mqtt_client_t
  * @return netif_status_t Status of Process
  */
@@ -131,14 +134,14 @@ netif_status_t netif_mqtt_config(netif_mqtt_client_t * client){
 			break;
 		case 1:
 			if(netif_core_atcmd_is_responded(&response)){
-				if(response == NETIF_RESPONSE_OK){
+				if(response == NETIF_RESPONSE_OK ||
+						response == NETIF_RESPONSE_ERROR){	// Force Error is Sucess because don't have read command to get client status
 					netif_core_atcmd_reset(true);
 					retry = 0;
 					step = 0;
 					return NETIF_OK;
 				}
-				else if(response == NETIF_RESPONSE_ERROR
-						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
+				else if(response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
 						netif_core_atcmd_reset(false);
 						retry = 0;
@@ -175,6 +178,47 @@ netif_status_t netif_mqtt_connect(netif_mqtt_client_t * client){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
 				netif_core_atcmd_reset(true);
+				// Send Connect to AP to Wifi Module
+				size = sprintf(at_message, NETIF_ATCMD_MQTT_CONNECT_QUERY);
+				netif_core_wifi_ethernet_output(at_message, size);
+				step = 1;
+			}
+			break;
+		case 1:
+			if(netif_core_atcmd_is_responded(&response)){
+				if(response == NETIF_RESPONSE_OK){
+					//Get AT Response Buffer
+					netif_core_atcmd_get_data_before(&data, &data_size);
+					// Check whether MQTT Client connect before or not: pattern +MQTTCONN:
+					if(strnstr(data,"+MQTTCONN:",data_size)){
+						// Connected before -> Return OK
+						netif_core_atcmd_reset(true);
+						step = 0;
+						retry = 0;
+						return NETIF_OK;
+					}else{
+						// Not connected before -> Step 2 to connect
+						retry = 0;
+						step = 2;
+					}
+				}
+				else if(response == NETIF_RESPONSE_ERROR
+						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
+					if(retry >= NETIF_MAX_RETRY){
+						netif_core_atcmd_reset(false);
+						retry = 0;
+						return NETIF_FAIL;
+					}
+					retry ++;
+					step = 0;
+				}
+			}
+			break;
+		case 2:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
+				last_time_sent = NETIF_GET_TIME_MS();
+				// Clear Before Data
+				netif_core_atcmd_reset(true);
 			    // Send Connect to AP to Wifi Module
 			    size = sprintf(at_message, NETIF_ATCMD_MQTT_CONNECT,
 			                                    client->host,
@@ -184,7 +228,7 @@ netif_status_t netif_mqtt_connect(netif_mqtt_client_t * client){
 			    step = 1;
 			}
 			break;
-		case 1:
+		case 3:
 			if(netif_core_atcmd_is_responded(&response)){
 				netif_core_atcmd_get_data_before(&data, &data_size);
 				if(response == NETIF_RESPONSE_OK ||

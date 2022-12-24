@@ -1,9 +1,9 @@
 #include "apps/netif_http.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_http.h"
-#include "utils/netif_buffer.h"
-#include "utils/netif_logger.h"
 #include "netif_opts.h"
+#include "../../lib/utils/utils_buffer.h"
+#include "../../lib/utils/utils_logger.h"
 
 
 // AT Message Buffer
@@ -16,7 +16,7 @@ static char at_message[NETIF_ATCMD_BUFFER_SIZE];
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_http_init(){
-	netif_log_debug("Netif Http Init");
+	utils_log_debug("Netif Http Init");
      // Do nothing
      return NETIF_OK;
 }
@@ -37,7 +37,7 @@ netif_status_t netif_http_run(){
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_http_deinit(){
-	netif_log_info("Netif Http Deinit");
+	utils_log_info("Netif Http Deinit");
     // Do nothing
     return NETIF_OK;
 }

@@ -1,9 +1,9 @@
 #include "manager/netif_wifi.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_wifi.h"
-#include "utils/netif_buffer.h"
-#include "utils/netif_logger.h"
 #include "netif_opts.h"
+#include "../../lib/utils/utils_buffer.h"
+#include "../../lib/utils/utils_logger.h"
 
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
@@ -46,13 +46,13 @@ netif_status_t netif_wifi_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED:
-        	netif_log_info("Wifi Connected");
+        	utils_log_info("Wifi Connected");
             /* code */
             wifi_connected = true;
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_GOT_IP:
-        	netif_log_info("Wifi Got IP");
+        	utils_log_info("Wifi Got IP");
         	// Get data from Core Buffer
 			netif_core_atcmd_get_data_before(&data,&data_size);
 			// Get IP
@@ -60,25 +60,25 @@ netif_status_t netif_wifi_run(){
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED:
-        	netif_log_info("Wifi Disconnected");
+        	utils_log_info("Wifi Disconnected");
             /* code */
             wifi_connected = false;
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE:
-        	netif_log_info("Smartconfig Type");
+        	utils_log_info("Smartconfig Type");
             // Reset ATCMD
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_CONNECTED_AP:
-        	netif_log_info("Smartconfig connected");
+        	utils_log_info("Smartconfig connected");
             // Set flag smartconfig_done to true
             smartconfig_done = true;
             // Reset ATCMD
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_INFO:
-        	netif_log_info("Smartconfig get info");
+        	utils_log_info("Smartconfig get info");
             smartconfig_done = true;
             // Get data from Core Buffer
             netif_core_atcmd_get_data_before(&data,&data_size);

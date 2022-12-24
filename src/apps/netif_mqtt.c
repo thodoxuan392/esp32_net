@@ -1,9 +1,9 @@
 #include "apps/netif_mqtt.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_mqtt.h"
-#include "utils/netif_buffer.h"
-#include "utils/netif_logger.h"
 #include "netif_opts.h"
+#include "../../lib/utils/utils_buffer.h"
+#include "../../lib/utils/utils_logger.h"
 
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
@@ -25,7 +25,7 @@ static netif_status_t netif_mqtt_parse_on_message();
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_mqtt_init(){
-	netif_log_debug("Netif Mqtt Init");
+	utils_log_debug("Netif Mqtt Init");
     return NETIF_OK;
 }
 
@@ -44,13 +44,13 @@ netif_status_t netif_mqtt_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED:
-        	netif_log_info("Connected Callback");
+        	utils_log_info("Connected Callback");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_connect(NETIF_OK);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED:
-        	netif_log_info("Disconnected Callback");
+        	utils_log_info("Disconnected Callback");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_disconnect(NETIF_OK);
@@ -67,13 +67,13 @@ netif_status_t netif_mqtt_run(){
 
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK:
-        	netif_log_info("Publish Callback OK");
+        	utils_log_info("Publish Callback OK");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_publish(NETIF_OK);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL:
-        	netif_log_info("Publish Callback Failed");
+        	utils_log_info("Publish Callback Failed");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_publish(NETIF_FAIL);
@@ -94,7 +94,7 @@ netif_status_t netif_mqtt_run(){
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_mqtt_deinit(){
-	netif_log_info("Netif Mqtt Deinit");
+	utils_log_info("Netif Mqtt Deinit");
     return NETIF_OK;
 }
 

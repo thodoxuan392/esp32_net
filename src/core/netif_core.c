@@ -1,8 +1,8 @@
 #include "core/netif_core.h"
-#include "utils/netif_buffer.h"
-#include "utils/netif_string.h"
-#include "utils/netif_logger.h"
 #include "netif_def.h"
+#include "../../lib/utils/utils_buffer.h"
+#include "../../lib/utils/utils_logger.h"
+#include "../../lib/utils/utils_string.h"
 
 static const char * at_response_table[] = {
     [NETIF_RESPONSE_OK] = "OK",
@@ -32,8 +32,8 @@ static const char * at_response_table[] = {
 static uint16_t at_response_table_size = sizeof(at_response_table)/sizeof(at_response_table[0]);
 
 // Netif Buffer to receive response from Module
-static netif_buffer_t buffer_4g;
-static netif_buffer_t buffer_wifi_ethernet;
+static utils_buffer_t buffer_4g;
+static utils_buffer_t buffer_wifi_ethernet;
 
 // Core buffer for handling response
 static uint8_t core_wifi_ethernet_buffer[BUFFER_MAX_SIZE];
@@ -47,14 +47,14 @@ static void netif_core_process_response(){
 	if(at_response_indication == true){
 		return;
 	}
-    if(netif_buffer_is_available(&buffer_wifi_ethernet)){
+    if(utils_buffer_is_available(&buffer_wifi_ethernet)){
         volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index];
         core_wifi_ethernet_buffer_index = (core_wifi_ethernet_buffer_index+1) % BUFFER_MAX_SIZE;
-        netif_buffer_pop(&buffer_wifi_ethernet,data_p,1);
+        utils_buffer_pop(&buffer_wifi_ethernet,data_p,1);
         // Check Response buffer match with any in at reponse table
         for (size_t i = 0; i < at_response_table_size; i++)
         {
-            if (netif_string_is_receive_data(core_wifi_ethernet_buffer,
+            if (utils_string_is_receive_data(core_wifi_ethernet_buffer,
                                                 core_wifi_ethernet_buffer_index,
                                                 at_response_table[i])){
                 // Match with index i
@@ -74,10 +74,10 @@ static void netif_core_process_response(){
  * @return false If failed or timeout
  */
 netif_status_t netif_core_init(){
-	netif_log_debug("Netif Core Init");
+	utils_log_debug("Netif Core Init");
     // Cleanup Buffer
-    netif_buffer_init(&buffer_4g);
-    netif_buffer_init(&buffer_wifi_ethernet);
+    utils_buffer_init(&buffer_4g);
+    utils_buffer_init(&buffer_wifi_ethernet);
     return NETIF_OK;
 }
 
@@ -94,12 +94,12 @@ netif_status_t netif_core_run(){
     // Check Input from 4G Module
     if(NETIF_4G_INPUT_IS_AVAILABLE()){
         data = NETIF_4G_INPUT();
-        netif_buffer_push(&buffer_4g,&data,1);
+        utils_buffer_push(&buffer_4g,&data,1);
     }
     // Check Input from Wifi/Ethernet Module
     if(NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()){
         data = NETIF_WIFI_ETHERNET_INPUT();
-        netif_buffer_push(&buffer_wifi_ethernet,&data,1);
+        utils_buffer_push(&buffer_wifi_ethernet,&data,1);
     }
     return NETIF_OK;
 }
@@ -111,7 +111,7 @@ netif_status_t netif_core_run(){
  * @return false if failed or timeout
  */
 netif_status_t netif_core_deinit(){
-	netif_log_info("Netif Core Deinit");
+	utils_log_info("Netif Core Deinit");
     // Do something
     return NETIF_OK;
 }
@@ -158,8 +158,8 @@ bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size){
  * @return false if failed
  */
 bool netif_core_atcmd_get_data_after(uint8_t *data){
-	if(netif_buffer_is_available(&buffer_wifi_ethernet)){
-		netif_buffer_pop(&buffer_wifi_ethernet,data,1);
+	if(utils_buffer_is_available(&buffer_wifi_ethernet)){
+		utils_buffer_pop(&buffer_wifi_ethernet,data,1);
 		return true;
 	}
 	return false;
@@ -189,7 +189,7 @@ bool netif_core_atcmd_reset(bool reset_buffer){
  * @return false If failed or timeout
  */
 bool netif_core_4g_input(uint8_t* data, size_t data_size){
-    netif_buffer_push(&buffer_4g, data, data_size);
+    utils_buffer_push(&buffer_4g, data, data_size);
 }
 
 /**
@@ -213,7 +213,7 @@ bool netif_core_4g_output(uint8_t* data, size_t data_size){
  * @return false if Failed or Timeout
  */
 bool netif_core_wifi_ethernet_input(uint8_t* data, size_t data_size){
-    netif_buffer_push(&buffer_wifi_ethernet, data, data_size);
+    utils_buffer_push(&buffer_wifi_ethernet, data, data_size);
 }
 
 /**

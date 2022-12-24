@@ -3,7 +3,8 @@
 #include "apps/netif_mqtt.h"
 #include "manager/netif_manager.h"
 #include "core/netif_core.h"
-#include "utils/netif_logger.h"
+
+#include "../lib/utils/utils_logger.h"
 
 /**
  * @brief Init Network Interface
@@ -12,19 +13,19 @@
  */
 netif_status_t netif_init(){
     if(netif_mqtt_init() != NETIF_OK){
-        netif_log_error("netif_mqtt_init failed");
+        utils_log_error("netif_mqtt_init failed");
         return NETIF_FAIL;
     }
     if(netif_http_init() != NETIF_OK){
-        netif_log_error("netif_http_init failed");
+        utils_log_error("netif_http_init failed");
         return NETIF_FAIL;
     }
     if(netif_manager_init() != NETIF_OK){
-        netif_log_error("netif_manager_init failed");
+        utils_log_error("netif_manager_init failed");
         return NETIF_FAIL;
     }
     if(netif_core_init() != NETIF_OK){
-        netif_log_error("netif_core_init failed");
+        utils_log_error("netif_core_init failed");
         return NETIF_FAIL;
     }
     return NETIF_OK;
@@ -49,19 +50,19 @@ netif_status_t netif_run(){
  */
 netif_status_t netif_deinit(){
     if(netif_mqtt_deinit() != NETIF_OK){
-        netif_log_error("netif_mqtt_deinit failed");
+        utils_log_error("netif_mqtt_deinit failed");
         return NETIF_FAIL;
     }
     if(netif_http_deinit() != NETIF_OK){
-        netif_log_error("netif_http_deinit failed");
+        utils_log_error("netif_http_deinit failed");
         return NETIF_FAIL;
     }
     if(netif_manager_deinit() != NETIF_OK){
-        netif_log_error("netif_manager_deinit failed");
+        utils_log_error("netif_manager_deinit failed");
         return NETIF_FAIL;
     }
     if(netif_core_deinit() != NETIF_OK){
-        netif_log_error("netif_core_deinit failed");
+        utils_log_error("netif_core_deinit failed");
         return NETIF_FAIL;
     }
     return NETIF_OK;

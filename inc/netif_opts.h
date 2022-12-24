@@ -5,7 +5,7 @@
 #include "main.h"
 #include "app_uart.h"
 
-#define NETIF_LOG_LEVEL			NETIF_LOG_ALL
+#define NETIF_LOG_LEVEL			UTILS_LOG_ALL
 
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()

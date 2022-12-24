@@ -1,7 +1,8 @@
 #include "manager/netif_ethernet.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_ethernet.h"
-#include "utils/netif_logger.h"
+
+#include "../../lib/utils/utils_logger.h"
 
 
 // AT Message Buffer
@@ -32,14 +33,14 @@ netif_status_t netif_ethernet_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED:
-        	netif_log_info("Ethernet connected");
+        	utils_log_info("Ethernet connected");
             /* code */
             ethernet_connected = true;
             netif_core_atcmd_reset(false);
             return NETIF_OK;
             break;
         case NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED:
-        	netif_log_info("Ethernet disconnected");
+        	utils_log_info("Ethernet disconnected");
             /* code */
             ethernet_connected = false;
             netif_core_atcmd_reset(false);

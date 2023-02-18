@@ -50,7 +50,7 @@ static void netif_core_process_response(){
     if(utils_buffer_is_available(&buffer_wifi_ethernet)){
         volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index];
         core_wifi_ethernet_buffer_index = (core_wifi_ethernet_buffer_index+1) % BUFFER_MAX_SIZE;
-        utils_buffer_pop(&buffer_wifi_ethernet,data_p,1);
+        utils_buffer_pop(&buffer_wifi_ethernet,data_p);
         // Check Response buffer match with any in at reponse table
         for (size_t i = 0; i < at_response_table_size; i++)
         {
@@ -76,8 +76,8 @@ static void netif_core_process_response(){
 netif_status_t netif_core_init(){
 	utils_log_debug("Netif Core Init");
     // Cleanup Buffer
-    utils_buffer_init(&buffer_4g);
-    utils_buffer_init(&buffer_wifi_ethernet);
+    utils_buffer_init(&buffer_4g, sizeof(uint8_t));
+    utils_buffer_init(&buffer_wifi_ethernet, sizeof(uint8_t));
     return NETIF_OK;
 }
 
@@ -94,12 +94,12 @@ netif_status_t netif_core_run(){
     // Check Input from 4G Module
     if(NETIF_4G_INPUT_IS_AVAILABLE()){
         data = NETIF_4G_INPUT();
-        utils_buffer_push(&buffer_4g,&data,1);
+        utils_buffer_push(&buffer_4g,&data);
     }
     // Check Input from Wifi/Ethernet Module
     if(NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()){
         data = NETIF_WIFI_ETHERNET_INPUT();
-        utils_buffer_push(&buffer_wifi_ethernet,&data,1);
+        utils_buffer_push(&buffer_wifi_ethernet,&data);
     }
     return NETIF_OK;
 }
@@ -159,7 +159,7 @@ bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size){
  */
 bool netif_core_atcmd_get_data_after(uint8_t *data){
 	if(utils_buffer_is_available(&buffer_wifi_ethernet)){
-		utils_buffer_pop(&buffer_wifi_ethernet,data,1);
+		utils_buffer_pop(&buffer_wifi_ethernet,data);
 		return true;
 	}
 	return false;
@@ -189,7 +189,9 @@ bool netif_core_atcmd_reset(bool reset_buffer){
  * @return false If failed or timeout
  */
 bool netif_core_4g_input(uint8_t* data, size_t data_size){
-    utils_buffer_push(&buffer_4g, data, data_size);
+	for (int var = 0; var < data_size; ++var) {
+		utils_buffer_push(&buffer_4g, &data[var]);
+	}
 }
 
 /**
@@ -213,7 +215,9 @@ bool netif_core_4g_output(uint8_t* data, size_t data_size){
  * @return false if Failed or Timeout
  */
 bool netif_core_wifi_ethernet_input(uint8_t* data, size_t data_size){
-    utils_buffer_push(&buffer_wifi_ethernet, data, data_size);
+	for (int var = 0; var < data_size; ++var) {
+		utils_buffer_push(&buffer_wifi_ethernet, &data[var]);
+	}
 }
 
 /**

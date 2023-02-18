@@ -13,12 +13,6 @@
     #define NETIF_GET_TIME_MS()          (void)NULL
 #endif
 
-// Logger
-#define NETIF_LOG(buffer,size) UART3_Transmit(buffer,size)
-#ifndef NETIF_LOG(buffer, size)
-    #define NETIF_LOG(buffer,size)          (void)NULL
-#endif
-
 // Max Retry
 #define NETIF_MAX_RETRY         3
 #ifndef NETIF_MAX_RETRY     

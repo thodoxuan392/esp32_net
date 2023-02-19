@@ -57,7 +57,7 @@ netif_status_t netif_http_send_get_request(netif_http_request_t * request){
     {
     case 0:
         // Send Connect to AP to Wifi Module
-        size = sprintf(at_message, NETIF_ATCMD_HTTP_GET,
+        size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_HTTP_GET,
                                         request->url);
         netif_core_wifi_ethernet_output(at_message, size);
         // Switch wait to Connect AP Response
@@ -102,7 +102,7 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
     {
     case 0:
         // Send Connect to AP to Wifi Module
-        size = sprintf(at_message, NETIF_ATCMD_HTTP_POST,
+        size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_HTTP_POST,
                                         request->url,
                                         strlen(request->data));
         netif_core_wifi_ethernet_output(at_message, size);

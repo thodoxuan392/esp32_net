@@ -10,7 +10,7 @@ typedef enum{
     NETIF_MANAGER_4G_MODE,
 	NETIF_MANAGER_ETHERNET_MODE,
     NETIF_MANAGER_WIFI_MODE,
-}netif_manager_state_t;
+}netif_manager_mode_t;
 
 /**
  * @brief Initialize Net Manager
@@ -62,5 +62,13 @@ netif_status_t netif_manager_is_ethernet_mode(bool *connected);
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_manager_is_wifi_mode(bool *connected);
+
+
+/**
+ * @brief Get Current Mode of Network Manager
+ *
+ * @return netif_manager_mode_t network mode
+ */
+netif_manager_mode_t netif_manager_get_mode();
 
 #endif //NETIF_MANAGER_H

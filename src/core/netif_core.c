@@ -28,6 +28,10 @@ static const char * at_response_table[] = {
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK] = "+MQTTSUBRECV:",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK] = "+MQTTPUB:OK",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL] = "+MQTTPUB:FAIL",
+    [NETIF_4G_REPORT_MQTT_CONNECTED] = "+CMQTTCONNECT: 0,0",        // client index is 0, err is 0
+    [NETIF_4G_REPORT_MQTT_DISCONNECTED] = "+CMQTTCONNLOST:0",
+    [NETIF_4G_REPORT_MQTT_MESSAGE_OK] = "+CMQTTRXSTART:0",
+    [NETIF_4G_REPORT_MQTT_PUB_OK] = "+CMQTTPUB: 0,0",
 };
 static uint16_t at_response_table_size = sizeof(at_response_table)/sizeof(at_response_table[0]);
 

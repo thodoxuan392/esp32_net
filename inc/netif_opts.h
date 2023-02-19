@@ -5,8 +5,6 @@
 #include "main.h"
 #include "app_uart.h"
 
-#define NETIF_LOG_LEVEL			UTILS_LOG_ALL
-
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
 #ifndef NETIF_GET_TIME_MS()         
@@ -20,14 +18,17 @@
 #endif
 
 // Port 4G INOUT to UART
+#define NETIF_4G_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
 #ifndef NETIF_4G_INPUT_IS_AVAILABLE()
     #define NETIF_4G_INPUT_IS_AVAILABLE()             0
 #endif
 
+#define NETIF_4G_INPUT()                         Uart1_Read_Received_Buffer()
 #ifndef NETIF_4G_INPUT()
     #define NETIF_4G_INPUT()               0
 #endif
 
+#define NETIF_4G_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
 #ifndef NETIF_4G_OUTPUT(data,data_size)
     #define NETIF_4G_OUTPUT(data,datasize)              (void)NULL
 #endif
@@ -57,9 +58,9 @@
 #define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
 
 // Network Apps Retry Interval
-#define NETIF_APPS_RETRY_INTERVAL			200	//3s
+#define NETIF_APPS_RETRY_INTERVAL			200	// 200ms
 
 // Network Retry Interval
-#define NETIF_MANAGER_RETRY_INTERVAL		10000	//3s
+#define NETIF_MANAGER_RETRY_INTERVAL		10000	//10s
 
 #endif //NETIF_OPTS_H

@@ -33,8 +33,6 @@ netif_status_t netif_4g_deinit(){
     return NETIF_OK;
 }
 
-
-// Specific Function
 /**
  * @brief Get IMEI of 4G Module
  * 

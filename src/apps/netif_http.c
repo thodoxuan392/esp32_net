@@ -16,7 +16,7 @@ static char at_message[NETIF_ATCMD_BUFFER_SIZE];
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_http_init(){
-	utils_log_debug("Netif Http Init");
+	utils_log_debug("Netif Http Init\r\n");
      // Do nothing
      return NETIF_OK;
 }
@@ -37,7 +37,7 @@ netif_status_t netif_http_run(){
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_http_deinit(){
-	utils_log_info("Netif Http Deinit");
+	utils_log_info("Netif Http Deinit\r\n");
     // Do nothing
     return NETIF_OK;
 }

@@ -33,14 +33,14 @@ netif_status_t netif_ethernet_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED:
-        	utils_log_info("Ethernet connected");
+        	utils_log_info("Ethernet connected\r\n");
             /* code */
             ethernet_connected = true;
             netif_core_atcmd_reset(false);
             return NETIF_OK;
             break;
         case NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED:
-        	utils_log_info("Ethernet disconnected");
+        	utils_log_info("Ethernet disconnected\r\n");
             /* code */
             ethernet_connected = false;
             netif_core_atcmd_reset(false);

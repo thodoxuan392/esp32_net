@@ -42,7 +42,7 @@ static utils_buffer_t buffer_wifi_ethernet;
 // Core buffer for handling response
 static uint8_t core_wifi_ethernet_buffer[BUFFER_MAX_SIZE];
 static uint16_t core_wifi_ethernet_buffer_index = 0;
-static bool at_response_indication= false;
+static bool at_response_indication = false;
 static netif_core_response_t at_response;
 
 // Internal Function
@@ -78,7 +78,7 @@ static void netif_core_process_response(){
  * @return false If failed or timeout
  */
 netif_status_t netif_core_init(){
-	utils_log_debug("Netif Core Init");
+	utils_log_debug("Netif Core Init\r\n");
     // Cleanup Buffer
     utils_buffer_init(&buffer_4g, sizeof(uint8_t));
     utils_buffer_init(&buffer_wifi_ethernet, sizeof(uint8_t));
@@ -115,7 +115,7 @@ netif_status_t netif_core_run(){
  * @return false if failed or timeout
  */
 netif_status_t netif_core_deinit(){
-	utils_log_info("Netif Core Deinit");
+	utils_log_info("Netif Core Deinit\r\n");
     // Do something
     return NETIF_OK;
 }

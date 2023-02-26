@@ -46,13 +46,13 @@ netif_status_t netif_wifi_run(){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED:
-        	utils_log_info("Wifi Connected");
+        	utils_log_info("Wifi Connected\r\n");
             /* code */
             wifi_connected = true;
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_GOT_IP:
-        	utils_log_info("Wifi Got IP");
+        	utils_log_info("Wifi Got IP\r\n");
         	// Get data from Core Buffer
 			netif_core_atcmd_get_data_before(&data,&data_size);
 			// Get IP
@@ -60,25 +60,25 @@ netif_status_t netif_wifi_run(){
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED:
-        	utils_log_info("Wifi Disconnected");
+        	utils_log_info("Wifi Disconnected\r\n");
             /* code */
             wifi_connected = false;
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE:
-        	utils_log_info("Smartconfig Type");
+        	utils_log_info("Smartconfig Type\r\n");
             // Reset ATCMD
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_CONNECTED_AP:
-        	utils_log_info("Smartconfig connected");
+        	utils_log_info("Smartconfig connected\r\n");
             // Set flag smartconfig_done to true
             smartconfig_done = true;
             // Reset ATCMD
             netif_core_atcmd_reset(false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_INFO:
-        	utils_log_info("Smartconfig get info");
+        	utils_log_info("Smartconfig get info\r\n");
             smartconfig_done = true;
             // Get data from Core Buffer
             netif_core_atcmd_get_data_before(&data,&data_size);

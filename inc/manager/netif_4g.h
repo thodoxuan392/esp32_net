@@ -5,6 +5,7 @@
 #include "stdbool.h"
 #include "netif_def.h"
 
+#define NETIF_4G_IMEI_SIZE  15
 
 /**
  * @brief Initialize 4G 

@@ -2,6 +2,8 @@
 #define NETIF_ATCMD_4G_H
 
 /******************************Checking Command ************************/
+// Testing
+#define NETIF_ATCMD_4G_TESTTING     "AT\r\n"
 // Enable Echo 
 #define NETIF_ATCMD_4G_ECHO_ENABLE     "ATE1\r\n"
 // Check Network Registration

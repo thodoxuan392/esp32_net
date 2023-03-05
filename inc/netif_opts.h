@@ -4,6 +4,7 @@
 // Include Entry Header in STM32
 #include "main.h"
 #include "app_uart.h"
+#include "app_sim3g.h"
 
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
@@ -17,6 +18,23 @@
     #define NETIF_MAX_RETRY         3
 #endif
 
+/***********************************************4G Module*******************************************/
+// Power 4G
+#define NETIF_4G_POWER(enable)		if(enable) { \
+											Power_Signal_High(); \
+									}else { \
+											Power_Signal_Low(); \
+									}
+
+#define NETIF_4G_RESET(enable)		if(enable) { \
+											Reset_Signal_High(); \
+									}else { \
+											Reset_Signal_Low(); \
+									}
+#define NETIF_4G_POWER_DURATION		1000		// 300ms
+#define NETIF_4G_RESET_DURATION		1000		// 300ms
+#define NETIF_4G_DELAY_BETWEEN_RESETANDPWRON	3000 // 2s
+#define NETIF_4G_WAIT_FOR_STARTUP_DURATION	20000		// 20s
 // Port 4G INOUT to UART
 #define NETIF_4G_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
 #ifndef NETIF_4G_INPUT_IS_AVAILABLE()
@@ -34,18 +52,19 @@
 #endif
 
 
+/***********************************************Wifi-LAN Module*******************************************/
 // Port WIFI-ETHERNET INOUT to UART
-#define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
+//#define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
 #ifndef NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()    
     #define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            0
 #endif
 
-#define NETIF_WIFI_ETHERNET_INPUT()                         Uart1_Read_Received_Buffer()
+//#define NETIF_WIFI_ETHERNET_INPUT()                         Uart1_Read_Received_Buffer()
 #ifndef NETIF_WIFI_ETHERNET_INPUT() 
     #define NETIF_WIFI_ETHERNET_INPUT()                         0
 #endif
 
-#define NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
+//#define NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
 #ifndef NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)
     #define NETIF_WIFI_ETHERNET_OUTPUT(data,datasize)           (void)NULL
 #endif
@@ -57,10 +76,13 @@
 #define NETIF_ATCMD_BUFFER_SIZE             1024
 #define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
 
+// Network Command Timeout
+#define NETIF_ATCMD_TIMEOUT					1000		// 1000ms
+
 // Network Apps Retry Interval
-#define NETIF_APPS_RETRY_INTERVAL			200	// 200ms
+#define NETIF_APPS_RETRY_INTERVAL			200		// 200ms
 
 // Network Retry Interval
-#define NETIF_MANAGER_RETRY_INTERVAL		10000	//10s
+#define NETIF_MANAGER_RETRY_INTERVAL		5000	// 5000ms
 
 #endif //NETIF_OPTS_H

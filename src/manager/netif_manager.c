@@ -7,7 +7,17 @@
 
 static netif_manager_mode_t netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
 
-
+// Internal Network Manager State
+enum {
+	NETIF_MANAGER_INIT_4G,
+	NETIF_MANAGER_INIT_ETHERNET,
+	NETIF_MANAGER_INIT_WIFI,
+	NETIF_MANAGER_CHECK_4G_CONNECTION,
+	NETIF_MANAGER_CHECK_ETHERNET_CONNECTION,
+	NETIF_MANAGER_CHECK_WIFI_CONNECTION,
+	NETIF_MANAGER_WIFI_RUN_STATION_MODE,
+	NETIF_MANAGER_WIFI_START_SMARTCONFIG
+};
 // Internal Function
 static void netif_manager_disconnect_mode();
 static void netif_manager_4g_mode();
@@ -21,7 +31,18 @@ static void netif_manager_wifi_mode();
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_manager_init(){
-	utils_log_debug("Netif manager init\r\n");
+    if(netif_4g_init() != NETIF_OK){
+        utils_log_error("netif_4g_init failed\r\n");
+        return NETIF_FAIL;
+    }
+    if(netif_ethernet_init() != NETIF_OK){
+        utils_log_error("netif_ethernet_init failed\r\n");
+        return NETIF_FAIL;
+    }
+    if(netif_wifi_init() != NETIF_OK){
+        utils_log_error("netif_wifi_init failed\r\n");
+        return NETIF_FAIL;
+    }
     return NETIF_OK;
 }
 
@@ -182,7 +203,7 @@ static void netif_manager_disconnect_mode(){
             	utils_log_debug("4G not connected\r\n");
                 step = 1;
             }
-        }else if(ret == NETIF_FAIL){
+        }else if(ret != NETIF_IN_PROCESS){
         	previous_time = NETIF_GET_TIME_MS();
         	utils_log_error("Check 4G Connection failed\r\n");
         }
@@ -203,7 +224,7 @@ static void netif_manager_disconnect_mode(){
             	utils_log_debug("Ethernet not connected\r\n");
                 step = 2;
             }
-        }else if(ret == NETIF_FAIL){
+        }else if(ret != NETIF_IN_PROCESS){
         	previous_time = NETIF_GET_TIME_MS();
         	utils_log_error("Check Ethernet Connection Failed\r\n");
         	step = 2;
@@ -228,7 +249,7 @@ static void netif_manager_disconnect_mode(){
 					step = 0;	// Reset to check 4g connection
 				}
             }
-        }else if(ret == NETIF_FAIL){
+        }else if(ret != NETIF_IN_PROCESS){
         	previous_time = NETIF_GET_TIME_MS();
         	utils_log_error("Check Wifi Connection Failed\r\n");
         	step = 0;
@@ -241,7 +262,7 @@ static void netif_manager_disconnect_mode(){
         	previous_time = NETIF_GET_TIME_MS();
         	utils_log_info("Run Wifi as Station Mode OK\r\n");
         	step = 4;
-        }else if(ret == NETIF_FAIL){
+        }else if(ret != NETIF_IN_PROCESS){
         	previous_time = NETIF_GET_TIME_MS();
         	utils_log_error("Run Wifi as Station Mode Failed\r\n");
         	step = 0;
@@ -324,7 +345,7 @@ static void netif_manager_ethernet_mode(){
 			utils_log_debug("Ethernet not connected\r\n");
 		}
 		previous_time = NETIF_GET_TIME_MS();
-	}else if(ret == NETIF_FAIL){
+	}else if(ret != NETIF_IN_PROCESS){
 		utils_log_error("Check Ethernet Connection Failed\r\n");
 		netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
 		previous_time = NETIF_GET_TIME_MS();
@@ -364,7 +385,7 @@ static void netif_manager_wifi_mode(){
 			netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
 		}
 		previous_time = NETIF_GET_TIME_MS();
-	}else if(ret == NETIF_FAIL){
+	}else if(ret != NETIF_IN_PROCESS){
 		utils_log_error("Check Wifi Connection Failed\r\n");
 		netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
 		previous_time = NETIF_GET_TIME_MS();

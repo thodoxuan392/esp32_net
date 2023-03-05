@@ -15,7 +15,10 @@ static bool ethernet_connected = false;
  * @return true if OK
  * @return false if failed or timeout
  */
-netif_status_t netif_ethernet_init();
+netif_status_t netif_ethernet_init(){
+	// TODO:
+	return NETIF_OK;
+}
 
 /**
  * @brief Run Ethernet Stack in Supper Loop, handle event,...
@@ -70,6 +73,7 @@ netif_status_t netif_ethernet_deinit();
  */
 netif_status_t netif_ethernet_is_connected(bool *connected){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
@@ -81,6 +85,7 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
     switch (step)
         {
         case 0:
+        	last_time_sent = NETIF_GET_TIME_MS();
         	// Clear All AT Response Before
         	netif_core_atcmd_reset(true);
             // Send Request Ethernet State to Module
@@ -90,6 +95,14 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
             step = 1;
             break;
         case 1:
+			// Check Timeout
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				// Reset State
+				step = 0;
+				// Return TIMEOUT
+				return NETIF_TIMEOUT;
+
+			}
             // Wait Disconnect AP Response
             if(netif_core_atcmd_is_responded(&at_response)){
                 // Reset State
@@ -127,6 +140,7 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
  */
 netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
@@ -134,6 +148,7 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Ethernet Module
         size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -141,6 +156,14 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer
@@ -175,6 +198,7 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
  */
 netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
@@ -182,6 +206,7 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Ethernet Module
         size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_MAC);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -189,6 +214,14 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer

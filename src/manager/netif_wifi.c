@@ -22,6 +22,7 @@ static char wifi_mac[MAC_ADDR_LEN];
  * @return false if failed or timeout
  */
 netif_status_t netif_wifi_init(){
+	// TODO:
     return NETIF_OK;
 }
 
@@ -114,11 +115,13 @@ netif_status_t netif_wifi_deinit();
  */
 netif_status_t netif_wifi_station_mode(){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     int size;
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_STATION_MODE);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -126,6 +129,14 @@ netif_status_t netif_wifi_station_mode(){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Connect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
         	// Reset State
@@ -160,11 +171,13 @@ netif_status_t netif_wifi_station_mode(){
  */
 netif_status_t netif_wifi_connect_ap(char *ssid, char * password){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     int size;
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_CONNECT_AP, ssid, password);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -172,6 +185,14 @@ netif_status_t netif_wifi_connect_ap(char *ssid, char * password){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Connect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
@@ -199,11 +220,13 @@ netif_status_t netif_wifi_connect_ap(char *ssid, char * password){
  */
 netif_status_t netif_wifi_disconnect_ap(){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     int size;
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_DISCONNECT_AP);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -211,6 +234,14 @@ netif_status_t netif_wifi_disconnect_ap(){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
@@ -238,6 +269,7 @@ netif_status_t netif_wifi_disconnect_ap(){
  */
 netif_status_t netif_wifi_is_connected(bool * connected){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     char * state_pattern = "+CWSTATE:";
     netif_core_response_t at_response;
     uint8_t *data;
@@ -251,6 +283,7 @@ netif_status_t netif_wifi_is_connected(bool * connected){
     switch (step)
         {
         case 0:
+        	last_time_sent = NETIF_GET_TIME_MS();
             // Send Connect to AP to Wifi Module
             size = sprintf(at_message, NETIF_ATCMD_WIFI_GET_STATE);
             netif_core_wifi_ethernet_output(at_message, size);
@@ -258,6 +291,14 @@ netif_status_t netif_wifi_is_connected(bool * connected){
             step = 1;
             break;
         case 1:
+			// Check Timeout
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				// Reset State
+				step = 0;
+				// Return TIMEOUT
+				return NETIF_TIMEOUT;
+
+			}
             // Wait Disconnect AP Response
             if(netif_core_atcmd_is_responded(&at_response)){
                 // Reset State
@@ -301,11 +342,13 @@ netif_status_t netif_wifi_is_connected(bool * connected){
  */
 netif_status_t netif_wifi_start_smartconfig(){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     int size;
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_START_SMARTCONFIG);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -313,6 +356,14 @@ netif_status_t netif_wifi_start_smartconfig(){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
@@ -340,11 +391,13 @@ netif_status_t netif_wifi_start_smartconfig(){
  */
 netif_status_t netif_wifi_stop_smartconfig(){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     int size;
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_STOP_SMARTCONFIG);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -352,6 +405,14 @@ netif_status_t netif_wifi_stop_smartconfig(){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait ATCMD Reponse
         if(netif_core_atcmd_is_responded(&at_response)){
             // Donot use data from response -> Clean Core Buffer
@@ -381,6 +442,7 @@ netif_status_t netif_wifi_stop_smartconfig(){
  */
 netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
@@ -388,6 +450,7 @@ netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size){
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_GET_IP);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -395,6 +458,14 @@ netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait Disconnect AP Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer
@@ -428,6 +499,7 @@ netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size){
  */
 netif_status_t netif_wifi_get_mac(char *mac , size_t mac_max_size){
     static uint8_t step = 0;
+    static uint32_t last_time_sent;
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
@@ -435,6 +507,7 @@ netif_status_t netif_wifi_get_mac(char *mac , size_t mac_max_size){
     switch (step)
     {
     case 0:
+    	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_GET_MAC);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -442,6 +515,14 @@ netif_status_t netif_wifi_get_mac(char *mac , size_t mac_max_size){
         step = 1;
         break;
     case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
         // Wait ATCMD Response
         if(netif_core_atcmd_is_responded(&at_response)){
             // Get Data from Core Buffer

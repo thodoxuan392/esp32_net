@@ -16,16 +16,22 @@ static char * setting_command[] = {
     NETIF_ATCMD_4G_SOCKET_CONFIG,
     NETIF_ATCMD_4G_DISABLE_TCP_MODE
 };
+// Connection status
+static bool _4g_connected = false;
 
 /************************************ Internal Functions********************************/
 // 4G Request State
 enum {
+	STATE_4G_IDLE,
+	STATE_4G_STARTUP,
 	STATE_4G_SETTING,
 	STATE_4G_GET_IMEI,
 	STATE_4G_WAIT_FOR_RESPONSE
 };
 
 // Handle imei response
+static netif_status_t netif_4g_startup();
+static netif_status_t netif_4g_setting();
 static bool netif_4g_handle_imei_response(uint8_t *data, uint16_t data_size, uint8_t *imei);
 
 /**
@@ -34,65 +40,46 @@ static bool netif_4g_handle_imei_response(uint8_t *data, uint16_t data_size, uin
  * @return netif_status_t State of Process
  */
 netif_status_t netif_4g_init(){
-    // Setting 4G module 
-    static size_t nb_setting_command = sizeof(setting_command) / sizeof(setting_command[0]);
-    static uint8_t step = STATE_4G_SETTING;
-	static uint8_t retry = 0;
-	static uint32_t last_time_sent = 0;
-    static uint8_t current_command_idx = 0;
-	netif_core_response_t response;
-	int size;
-    switch (step) {
-    case STATE_4G_SETTING:
-        if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
-            last_time_sent = NETIF_GET_TIME_MS();
-            // Clear Before Data
-            netif_core_atcmd_reset(true);
-            size = sprintf(at_message, setting_command[current_command_idx++]);
-            netif_core_wifi_ethernet_output(at_message, size);
-            step = STATE_4G_WAIT_FOR_RESPONSE;
-        }
-        break;
-    case STATE_4G_WAIT_FOR_RESPONSE:
-        if(netif_core_atcmd_is_responded(&response)){
-            if(response == NETIF_RESPONSE_OK){
-                netif_core_atcmd_reset(true);
-                retry = 0;
-                step = STATE_4G_SETTING;
-                if(current_command_idx >= nb_setting_command){
-                    // Reset Setting Command Idx
-                    current_command_idx = 0;
-                    return NETIF_OK;
-                }
-            }
-            else if(response == NETIF_RESPONSE_ERROR){
-                if(retry >= NETIF_MAX_RETRY){
-                    netif_core_atcmd_reset(false);
-                    retry = 0;
-                    step = STATE_4G_SETTING;
-                    return NETIF_FAIL;
-                }
-                retry ++;
-                step = STATE_4G_SETTING;
-            }
-        }
-        break;
-    default:
-        break;
-    }    
-    return NETIF_OK;
+	return NETIF_OK;
 }
+
+
 
 /**
  * @brief Run 4G in Supper Loop
- * 
+ *
  * @return netif_status_t State of Process
  */
 netif_status_t netif_4g_run(){
-    //TODO: 
-    // Checking Response Event in 4G module
-    
-    return NETIF_OK;
+	// Startup 4G Module
+	static uint8_t state = STATE_4G_STARTUP;
+	netif_status_t ret;
+	switch (state) {
+	case STATE_4G_STARTUP:
+		ret = netif_4g_startup();
+		if(ret == NETIF_OK){
+			state = STATE_4G_SETTING;
+		}else if(ret != NETIF_IN_PROCESS){
+			return ret;
+		}
+		break;
+	case STATE_4G_SETTING:
+		ret = netif_4g_setting();
+		if(ret == NETIF_OK){
+			state = STATE_4G_IDLE;
+			return NETIF_OK;
+		}else if(ret != NETIF_IN_PROCESS){
+			state = STATE_4G_STARTUP;
+			return ret;
+		}
+		break;
+	case STATE_4G_IDLE:
+		return NETIF_OK;
+		break;
+	default:
+		break;
+	}
+	return NETIF_IN_PROCESS;
 }
 
 /**
@@ -128,11 +115,19 @@ netif_status_t netif_4g_get_imei(char * imei, size_t imei_max_size){
 				// Clear Before Data
 				netif_core_atcmd_reset(true);
                 size = sprintf(at_message, NETIF_ATCMD_4G_GET_IMEI);
-				netif_core_wifi_ethernet_output(at_message, size);
+				netif_core_4g_output(at_message, size);
 				step = STATE_4G_WAIT_FOR_RESPONSE;
 			}
 			break;
 		case STATE_4G_WAIT_FOR_RESPONSE:
+			// Check Timeout
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				// Reset State
+				step = STATE_4G_GET_IMEI;
+				// Return TIMEOUT
+				return NETIF_TIMEOUT;
+
+			}
 			if(netif_core_atcmd_is_responded(&response)){
                 // Get Data
 				netif_core_atcmd_get_data_before(&data, &data_size);
@@ -186,7 +181,7 @@ netif_status_t netif_4g_send_sms(char * phone_number, char * message){
  */
 netif_status_t netif_4g_is_connected(bool *connected){
     //TODO: 
-    
+	*connected = _4g_connected;
     return NETIF_OK;
 }
 
@@ -200,6 +195,120 @@ netif_status_t netif_4g_is_internet_connected(bool *connected){
     return NETIF_OK;
 }
 
+
+
+static netif_status_t netif_4g_startup(){
+	// Startup 4G Module
+	static uint8_t step = STATE_4G_STARTUP;
+	static uint32_t last_time_sent = 0;
+	netif_core_response_t response;
+	int size;
+	switch (step) {
+	case STATE_4G_STARTUP:
+
+		// Blocking Process
+		last_time_sent = NETIF_GET_TIME_MS();
+		NETIF_4G_RESET(true);
+		last_time_sent = NETIF_GET_TIME_MS();
+		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_RESET_DURATION);
+		NETIF_4G_RESET(false);
+		last_time_sent = NETIF_GET_TIME_MS();
+		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_DELAY_BETWEEN_RESETANDPWRON);
+		NETIF_4G_POWER(false);
+		last_time_sent = NETIF_GET_TIME_MS();
+		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_POWER_DURATION);
+		NETIF_4G_POWER(true);
+		last_time_sent = NETIF_GET_TIME_MS();
+		step = STATE_4G_WAIT_FOR_RESPONSE;
+		break;
+	case STATE_4G_WAIT_FOR_RESPONSE:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_WAIT_FOR_STARTUP_DURATION){
+			// Reset State
+			step = STATE_4G_STARTUP;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
+		// Check Response
+		if(netif_core_atcmd_is_responded(&response)){
+			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
+				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
+				_4g_connected = true;
+				netif_core_atcmd_reset(true);
+				step = STATE_4G_STARTUP;
+				return NETIF_OK;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return NETIF_IN_PROCESS;
+}
+
+
+static netif_status_t netif_4g_setting(){
+	// Setting 4G module
+	static size_t nb_setting_command = sizeof(setting_command) / sizeof(setting_command[0]);
+	static uint8_t step = STATE_4G_SETTING;
+	static uint8_t retry = 0;
+	static uint32_t last_time_sent = 0;
+	static uint8_t current_command_idx = 0;
+	netif_core_response_t response;
+	int size;
+	switch (step) {
+	case STATE_4G_SETTING:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
+			last_time_sent = NETIF_GET_TIME_MS();
+			// Clear Before Data
+			netif_core_atcmd_reset(true);
+			size = sprintf(at_message, setting_command[current_command_idx++]);
+			utils_log_debug(at_message);
+			netif_core_4g_output(at_message, size);
+			step = STATE_4G_WAIT_FOR_RESPONSE;
+		}
+		break;
+	case STATE_4G_WAIT_FOR_RESPONSE:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			utils_log_debug("Timeout\r\n");
+			// Reset State
+			step = STATE_4G_SETTING;
+			retry = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
+		// Check Response
+		if(netif_core_atcmd_is_responded(&response)){
+			if(response == NETIF_RESPONSE_OK){
+				netif_core_atcmd_reset(true);
+				retry = 0;
+				step = STATE_4G_SETTING;
+				if(current_command_idx >= nb_setting_command){
+					// Reset Setting Command Idx
+					current_command_idx = 0;
+					return NETIF_OK;
+				}
+			}
+			else if(response == NETIF_RESPONSE_ERROR){
+				if(retry >= NETIF_MAX_RETRY){
+					netif_core_atcmd_reset(false);
+					retry = 0;
+					step = STATE_4G_SETTING;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				step = STATE_4G_SETTING;
+			}
+		}
+		break;
+	default:
+		break;
+	}
+	return NETIF_IN_PROCESS;
+}
 
 static bool netif_4g_handle_imei_response(uint8_t *data, uint16_t data_size, uint8_t *imei){
     static char imei_prefix[] = "+SIMEI:";

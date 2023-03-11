@@ -181,6 +181,8 @@ netif_status_t netif_mqtt_deinit(){
  * @return netif_status_t Status of Process
  */
 netif_status_t netif_mqtt_config(netif_mqtt_client_t * client){
+	// Assign to System Mqtt Client
+	mqtt_client = client;
 	netif_manager_mode_t netmanager_mode = netif_manager_get_mode();
 	switch (netmanager_mode) {
 		case NETIF_MANAGER_WIFI_MODE:

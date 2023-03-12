@@ -94,14 +94,12 @@ netif_status_t netif_mqtt_run(){
         {
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED:
 		case NETIF_4G_REPORT_MQTT_CONNECTED:
-        	utils_log_info("Connected Callback\r\n");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_connect(NETIF_OK);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED:
 		case NETIF_4G_REPORT_MQTT_DISCONNECTED:
-        	utils_log_info("Disconnected Callback\r\n");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_disconnect(NETIF_OK);
@@ -126,7 +124,6 @@ netif_status_t netif_mqtt_run(){
 			// Handle data when have on message for 4G
 //			utils_log_info("Message Callback OK\r\n");
 			if(netif_4g_mqtt_parse_on_message()){
-				utils_log_info("Message Callback OK\r\n");
 				// Clear AT response
 				netif_core_atcmd_reset(false);
 				// Callback
@@ -141,14 +138,12 @@ netif_status_t netif_mqtt_run(){
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK:
 		case NETIF_4G_REPORT_MQTT_PUB_OK:
-        	utils_log_info("Publish Callback OK\r\n");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_publish(NETIF_OK);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL:
 		case NETIF_4G_REPORT_MQTT_PUB_FAIL:
-        	utils_log_info("Publish Callback Failed\r\n");
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
             mqtt_client->on_publish(NETIF_FAIL);

@@ -29,6 +29,14 @@ enum {
 	STATE_4G_WAIT_FOR_RESPONSE
 };
 
+enum {
+	STATE_4G_STARTUP_RESET_ENA,
+	STATE_4G_STARTUP_RESET_DIS,
+	STATE_4G_STARTUP_PWRON_DIS,
+	STATE_4G_STARTUP_PWRON_ENA,
+	STATE_4G_STARTUP_WAIT_FOR_RESPONSE,
+};
+
 // Handle imei response
 static netif_status_t netif_4g_startup();
 static netif_status_t netif_4g_setting();
@@ -199,33 +207,46 @@ netif_status_t netif_4g_is_internet_connected(bool *connected){
 
 static netif_status_t netif_4g_startup(){
 	// Startup 4G Module
-	static uint8_t step = STATE_4G_STARTUP;
+	static uint8_t state = STATE_4G_STARTUP;
 	static uint32_t last_time_sent = 0;
 	netif_core_response_t response;
 	int size;
-	switch (step) {
-	case STATE_4G_STARTUP:
-
-		// Blocking Process
-		last_time_sent = NETIF_GET_TIME_MS();
+	switch (state) {
+	case STATE_4G_STARTUP_RESET_ENA:
+		utils_log_debug("STATE_4G_STARTUP_RESET_ENA\r\n");
 		NETIF_4G_RESET(true);
 		last_time_sent = NETIF_GET_TIME_MS();
-		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_RESET_DURATION);
-		NETIF_4G_RESET(false);
-		last_time_sent = NETIF_GET_TIME_MS();
-		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_DELAY_BETWEEN_RESETANDPWRON);
-		NETIF_4G_POWER(false);
-		last_time_sent = NETIF_GET_TIME_MS();
-		while(NETIF_GET_TIME_MS() - last_time_sent < NETIF_4G_POWER_DURATION);
-		NETIF_4G_POWER(true);
-		last_time_sent = NETIF_GET_TIME_MS();
-		step = STATE_4G_WAIT_FOR_RESPONSE;
+		state = STATE_4G_STARTUP_RESET_DIS;
 		break;
-	case STATE_4G_WAIT_FOR_RESPONSE:
+	case STATE_4G_STARTUP_RESET_DIS:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_RESET_DURATION){
+			utils_log_debug("STATE_4G_STARTUP_RESET_DIS\r\n");
+			NETIF_4G_RESET(false);
+			last_time_sent = NETIF_GET_TIME_MS();
+			state = STATE_4G_STARTUP_PWRON_DIS;
+		}
+		break;
+	case STATE_4G_STARTUP_PWRON_DIS:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_DELAY_BETWEEN_RESETANDPWRON){
+			utils_log_debug("STATE_4G_STARTUP_PWRON_DIS\r\n");
+			NETIF_4G_POWER(false);
+			last_time_sent = NETIF_GET_TIME_MS();
+			state = STATE_4G_STARTUP_PWRON_ENA;
+		}
+		break;
+	case STATE_4G_STARTUP_PWRON_ENA:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_POWER_DURATION){
+			utils_log_debug("STATE_4G_STARTUP_PWRON_ENA\r\n");
+			NETIF_4G_POWER(true);
+			last_time_sent = NETIF_GET_TIME_MS();
+			state = STATE_4G_STARTUP_WAIT_FOR_RESPONSE;
+		}
+	case STATE_4G_STARTUP_WAIT_FOR_RESPONSE:
 		// Check Timeout
 		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_WAIT_FOR_STARTUP_DURATION){
+			utils_log_debug("STATE_4G_STARTUP_WAIT_FOR_RESPONSE\r\n");
 			// Reset State
-			step = STATE_4G_STARTUP;
+			state = STATE_4G_STARTUP_RESET_ENA;
 			// Return TIMEOUT
 			return NETIF_TIMEOUT;
 
@@ -236,7 +257,7 @@ static netif_status_t netif_4g_startup(){
 				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
 				_4g_connected = true;
 				netif_core_atcmd_reset(true);
-				step = STATE_4G_STARTUP;
+				state = STATE_4G_STARTUP_RESET_ENA;
 				return NETIF_OK;
 			}
 		}

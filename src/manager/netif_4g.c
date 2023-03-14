@@ -255,7 +255,6 @@ static netif_status_t netif_4g_startup(){
 		if(netif_core_atcmd_is_responded(&response)){
 			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
 				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
-				_4g_connected = true;
 				netif_core_atcmd_reset(true);
 				state = STATE_4G_STARTUP_RESET_ENA;
 				return NETIF_OK;
@@ -308,6 +307,7 @@ static netif_status_t netif_4g_setting(){
 				retry = 0;
 				step = STATE_4G_SETTING;
 				if(current_command_idx >= nb_setting_command){
+					_4g_connected = true;
 					// Reset Setting Command Idx
 					current_command_idx = 0;
 					return NETIF_OK;

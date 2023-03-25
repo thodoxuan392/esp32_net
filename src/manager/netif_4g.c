@@ -35,6 +35,8 @@ enum {
 	STATE_4G_STARTUP_PWRON_DIS,
 	STATE_4G_STARTUP_PWRON_ENA,
 	STATE_4G_STARTUP_WAIT_FOR_RESPONSE,
+	STATE_4G_STARTUP_SOFTWARE_RESET,
+	STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET,
 };
 
 // Handle imei response
@@ -244,7 +246,35 @@ static netif_status_t netif_4g_startup(){
 	case STATE_4G_STARTUP_WAIT_FOR_RESPONSE:
 		// Check Timeout
 		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_WAIT_FOR_STARTUP_DURATION){
-			utils_log_debug("STATE_4G_STARTUP_WAIT_FOR_RESPONSE\r\n");
+			utils_log_error("STATE_4G_STARTUP_WAIT_FOR_RESPONSE TIMEOUT\r\n");
+			// Switch to Software Reset
+			state = STATE_4G_STARTUP_SOFTWARE_RESET;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
+		// Check Response
+		if(netif_core_atcmd_is_responded(&response)){
+			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
+				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
+				netif_core_atcmd_reset(true);
+				state = STATE_4G_STARTUP_RESET_ENA;
+				return NETIF_OK;
+			}
+		}
+		break;
+	case STATE_4G_STARTUP_SOFTWARE_RESET:
+		last_time_sent = NETIF_GET_TIME_MS();
+		netif_core_atcmd_reset(true);
+		size = sprintf(at_message, NETIF_ATCMD_4G_RESET);
+		utils_log_debug(at_message);
+		netif_core_4g_output(at_message, size);
+		state = STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET;
+		break;
+	case STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_4G_WAIT_FOR_SOFTWARE_RESET_DURATION){
+			utils_log_error("STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET Timeout\r\n");
 			// Reset State
 			state = STATE_4G_STARTUP_RESET_ENA;
 			// Return TIMEOUT
@@ -254,7 +284,7 @@ static netif_status_t netif_4g_startup(){
 		// Check Response
 		if(netif_core_atcmd_is_responded(&response)){
 			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
-				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
+				utils_log_info("STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET Ok\r\n");
 				netif_core_atcmd_reset(true);
 				state = STATE_4G_STARTUP_RESET_ENA;
 				return NETIF_OK;

@@ -31,10 +31,11 @@
 									}else { \
 											Reset_Signal_Low(); \
 									}
-#define NETIF_4G_POWER_DURATION		1000		// 300ms
+#define NETIF_4G_POWER_DURATION		2000		// 300ms
 #define NETIF_4G_RESET_DURATION		1000		// 300ms
 #define NETIF_4G_DELAY_BETWEEN_RESETANDPWRON	3000 // 2s
-#define NETIF_4G_WAIT_FOR_STARTUP_DURATION	20000		// 20s
+#define NETIF_4G_WAIT_FOR_STARTUP_DURATION	10000		// 20s
+#define NETIF_4G_WAIT_FOR_SOFTWARE_RESET_DURATION	10000		// 20s
 // Port 4G INOUT to UART
 #define NETIF_4G_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
 #ifndef NETIF_4G_INPUT_IS_AVAILABLE()
@@ -83,6 +84,6 @@
 #define NETIF_APPS_RETRY_INTERVAL			200		// 200ms
 
 // Network Retry Interval
-#define NETIF_MANAGER_RETRY_INTERVAL		5000	// 5000ms
+#define NETIF_MANAGER_RETRY_INTERVAL		3000	// 5000ms
 
 #endif //NETIF_OPTS_H

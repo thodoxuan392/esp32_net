@@ -799,8 +799,8 @@ static netif_status_t netif_4g_mqtt_connect(netif_mqtt_client_t * client){
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(false);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
 						retry = 0;
 						state = STATE_4G_MQTT_CONNECT;
 						return NETIF_FAIL;
@@ -852,8 +852,8 @@ static netif_status_t netif_4g_mqtt_disconnect(netif_mqtt_client_t * client){
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(false);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
 						retry = 0;
 						state = STATE_4G_MQTT_DISCONNECT;
 						return NETIF_FAIL;
@@ -931,8 +931,8 @@ static netif_status_t netif_4g_mqtt_subcribe(netif_mqtt_client_t * client, char 
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(false);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
 						retry = 0;
 						state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
 						return NETIF_FAIL;
@@ -991,8 +991,8 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 				}
 				// Fail Case
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(false);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
 						retry = 0;
 						state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
 						return NETIF_FAIL;
@@ -1011,8 +1011,8 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(false);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
 						retry = 0;
 						state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
 						return NETIF_FAIL;
@@ -1072,9 +1072,9 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 					state = STATE_4G_MQTT_PUBLISH_PAYLOAD;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(true);
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
-						netif_core_atcmd_reset(true);
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
@@ -1097,8 +1097,8 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 					state = STATE_4G_MQTT_PUBLISH_PAYLOAD_INPUT;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(true);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(true);
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
@@ -1118,8 +1118,8 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 					state = STATE_4G_MQTT_PUBLISH;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(true);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(true);
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
@@ -1145,8 +1145,8 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 						state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 					}
 					else if(response == NETIF_RESPONSE_ERROR){
+						netif_core_atcmd_reset(true);
 						if(retry >= NETIF_MAX_RETRY){
-							netif_core_atcmd_reset(true);
 							retry = 0;
 							state = STATE_4G_MQTT_PUBLISH_TOPIC;
 							return NETIF_FAIL;
@@ -1166,8 +1166,8 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(true);
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(true);
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;

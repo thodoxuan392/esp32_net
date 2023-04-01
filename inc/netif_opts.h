@@ -37,17 +37,17 @@
 #define NETIF_4G_WAIT_FOR_STARTUP_DURATION	10000		// 20s
 #define NETIF_4G_WAIT_FOR_SOFTWARE_RESET_DURATION	10000		// 20s
 // Port 4G INOUT to UART
-#define NETIF_4G_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
+//#define NETIF_4G_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
 #ifndef NETIF_4G_INPUT_IS_AVAILABLE()
     #define NETIF_4G_INPUT_IS_AVAILABLE()             0
 #endif
 
-#define NETIF_4G_INPUT()                         Uart1_Read_Received_Buffer()
+//#define NETIF_4G_INPUT()                         Uart1_Read_Received_Buffer()
 #ifndef NETIF_4G_INPUT()
     #define NETIF_4G_INPUT()               0
 #endif
 
-#define NETIF_4G_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
+//#define NETIF_4G_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
 #ifndef NETIF_4G_OUTPUT(data,data_size)
     #define NETIF_4G_OUTPUT(data,datasize)              (void)NULL
 #endif
@@ -55,17 +55,17 @@
 
 /***********************************************Wifi-LAN Module*******************************************/
 // Port WIFI-ETHERNET INOUT to UART
-//#define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            Uart1_Received_Buffer_Available()
+#define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            UART4_Read_Available()
 #ifndef NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()    
     #define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            0
 #endif
 
-//#define NETIF_WIFI_ETHERNET_INPUT()                         Uart1_Read_Received_Buffer()
+#define NETIF_WIFI_ETHERNET_INPUT()                         UART4_Read_Received_Buffer()
 #ifndef NETIF_WIFI_ETHERNET_INPUT() 
     #define NETIF_WIFI_ETHERNET_INPUT()                         0
 #endif
 
-//#define NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)          Sim3g_Transmit(data, data_size)
+#define NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)          UART4_transmit(data, data_size)
 #ifndef NETIF_WIFI_ETHERNET_OUTPUT(data,data_size)
     #define NETIF_WIFI_ETHERNET_OUTPUT(data,datasize)           (void)NULL
 #endif

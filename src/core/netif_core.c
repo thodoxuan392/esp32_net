@@ -49,7 +49,8 @@ static uint8_t core_4g_buffer[BUFFER_MAX_SIZE];
 static uint16_t core_4g_buffer_index = 0;
 static bool at_response_4g_indication = false;
 // AT Indication
-static netif_core_response_t at_response;
+static netif_core_response_t at_response_wifi_ethernet;
+static netif_core_response_t at_response_4g;
 
 // Internal Function
 static void netif_core_process_response(){
@@ -68,7 +69,8 @@ static void netif_core_process_response(){
                                                 core_wifi_ethernet_buffer_index,
                                                 at_response_table[i])){
                 // Match with index i
-                at_response = (netif_core_response_t)i;
+            	at_response_wifi_ethernet = (netif_core_response_t)i;
+//                utils_log_debug("Wifi-Ethernet response: %d\r\n", at_response_wifi_ethernet);
                 at_response_wifi_ethernet_indication = true;
                 break;
             }
@@ -85,7 +87,8 @@ static void netif_core_process_response(){
             									core_4g_buffer_index,
                                                 at_response_table[i])){
                 // Match with index i
-                at_response = (netif_core_response_t)i;
+            	at_response_4g = (netif_core_response_t)i;
+//            	utils_log_debug("4G response: %d\r\n", at_response_4g);
                 at_response_4g_indication = true;
                 break;
             }
@@ -151,9 +154,13 @@ netif_status_t netif_core_deinit(){
  * @return false if not
  */
 bool netif_core_atcmd_is_responded(netif_core_response_t* response){
-    if(at_response_wifi_ethernet_indication || at_response_4g_indication){
-        *response = at_response;
+    if(at_response_wifi_ethernet_indication){
+        *response = at_response_wifi_ethernet;
         return true;
+    }
+    if(at_response_4g_indication){
+    	*response = at_response_4g;
+    	return true;
     }
     return false;
 }

@@ -17,7 +17,7 @@
 // Wifi-Ethernet Unsubcribe from Topic (link_id,topic)
 #define NETIF_ATCMD_WIFI_ETHERNET_MQTT_UNSUBCRIBE           "AT+MQTTUNSUB=0,\"%s\"\n"
 // Wifi-Ethernet Publish Message to Topic (link_id,topic,data,qos,retain)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH              "AT+MQTTPUB=0,\"%s\",\"%s\",%d,%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH              "AT+MQTTPUBRAW=0,\"%s\",%d,%d,%d\n"
 // Wifi-Ethernet Get MQTT Connection State
 #define NETIF_ATCMD_WIFI_ETHERNET_MQTT_GET_CONNECTION       "AT+MQTTCONN?\n"
 

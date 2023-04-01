@@ -80,54 +80,8 @@ netif_status_t netif_ethernet_is_connected(bool *connected){
     int size;
     if(ethernet_connected){
         *connected = ethernet_connected;
-        return NETIF_OK;
-    }else{
-    switch (step)
-        {
-        case 0:
-        	last_time_sent = NETIF_GET_TIME_MS();
-        	// Clear All AT Response Before
-        	netif_core_atcmd_reset(true);
-            // Send Request Ethernet State to Module
-            size = sprintf(at_message, NETIF_ATCMD_ETHERNET_GET_IP);
-            netif_core_wifi_ethernet_output(at_message, size);
-            // Switch wait to Wait Disconnect AP Response
-            step = 1;
-            break;
-        case 1:
-			// Check Timeout
-			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
-				// Reset State
-				step = 0;
-				// Return TIMEOUT
-				return NETIF_TIMEOUT;
-
-			}
-            // Wait Disconnect AP Response
-            if(netif_core_atcmd_is_responded(&at_response)){
-                // Reset State
-                step = 0;
-                // Check AT Response
-                if(at_response == NETIF_RESPONSE_OK){
-                    // Get Connection Status
-                    netif_core_atcmd_get_data_before(&data , &data_size);
-                    // Handling to get status from data
-                    // TODO:
-                    //*connected = true;
-                    netif_core_atcmd_reset(false);
-                    return NETIF_OK;
-                }else{
-                    // Donot use data from response -> Clean Core Buffer
-                    netif_core_atcmd_reset(false);
-                    return NETIF_FAIL;
-                }
-            }
-            break;
-        default:
-            break;
-        }
     }
-    return NETIF_IN_PROCESS;
+    return NETIF_OK;
 }
 
 /**

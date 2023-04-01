@@ -28,6 +28,7 @@ enum {
 	STATE_WIFI_ETHERNET_MQTT_SUBCRIBE,
 	STATE_WIFI_ETHERNET_MQTT_UNSUBCRIBE,
 	STATE_WIFI_ETHERNET_MQTT_PUBLISH,
+	STATE_WIFI_ETHERNET_MQTT_PUBLISH_INPUT,
 	STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE,
 	// 4G Request State
 	STATE_4G_MQTT_START,
@@ -356,7 +357,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_config(netif_mqtt_client_t * clie
 													client->username,
 													client->password);
 				netif_core_wifi_ethernet_output(at_message, size);
-				state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
+				state = STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE;
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
@@ -644,24 +645,51 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 				// Send Publish Request to Wifi Ethernet Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH,
 																	topic,
-																	payload,
+																	strlen(payload),
 																	qos,
 																	retain);
 			    netif_core_wifi_ethernet_output(at_message, size);
-				state = STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE;
+				state = STATE_WIFI_ETHERNET_MQTT_PUBLISH_INPUT;
+			}
+			break;
+		case STATE_WIFI_ETHERNET_MQTT_PUBLISH_INPUT:
+			if(netif_core_atcmd_is_responded(&response)){
+				if(response == NETIF_RESPONSE_INPUT){
+					netif_core_atcmd_reset(false);
+					netif_core_wifi_ethernet_output(payload, strlen(payload));
+					retry = 0;
+					state = STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE;
+				}
+				else if(response == NETIF_RESPONSE_ERROR
+						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
+					if(retry >= NETIF_MAX_RETRY){
+						// Reset Buffer and Indication if Try number over
+						netif_core_atcmd_reset(true);
+						retry = 0;
+						state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
+						return NETIF_FAIL;
+					}
+					retry ++;
+					state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
+				}
+				// Ignore other case
+				else{
+					netif_core_atcmd_reset(false);
+				}
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
 			if(netif_core_atcmd_is_responded(&response)){
 				// For Wifi-Ethernet case
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(true);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR
-						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
+						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY
+						 || response == NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL){
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
 						netif_core_atcmd_reset(true);

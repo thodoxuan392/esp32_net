@@ -90,22 +90,24 @@ netif_status_t netif_mqtt_run(){
     uint8_t *data;
     size_t data_len;
     // Wait Connect AP Response
-    if(netif_core_atcmd_is_responded(&at_response)){
+    if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response) || netif_core_atcmd_is_responded(NETIF_4G, &at_response)){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_CONNECTED:
 		case NETIF_4G_REPORT_MQTT_CONNECTED:
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
-            if(mqtt_client && mqtt_client->on_connect){
+			netif_core_atcmd_reset(NETIF_4G,false);
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
+			if(mqtt_client && mqtt_client->on_connect){
             	mqtt_client->on_connect(NETIF_OK);
             }
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED:
 		case NETIF_4G_REPORT_MQTT_DISCONNECTED:
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
-            if(mqtt_client && mqtt_client->on_disconnect){
+			netif_core_atcmd_reset(NETIF_4G,false);
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
+			if(mqtt_client && mqtt_client->on_disconnect){
             	mqtt_client->on_disconnect(NETIF_OK);
             }
             break;
@@ -114,8 +116,9 @@ netif_status_t netif_mqtt_run(){
 
         	if(netif_wifi_ethernet_mqtt_parse_on_message()){
         		// Clear AT Response
-        		netif_core_atcmd_reset(false);
-				if(mqtt_client && mqtt_client->on_message){
+        		netif_core_atcmd_reset(NETIF_4G,false);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
+        		if(mqtt_client && mqtt_client->on_message){
 				 mqtt_client->on_message(topic,payload);
 				}
 				// Reset Parameters
@@ -130,7 +133,8 @@ netif_status_t netif_mqtt_run(){
 //			utils_log_info("Message Callback OK\r\n");
 			if(netif_4g_mqtt_parse_on_message()){
 				// Clear AT response
-				netif_core_atcmd_reset(false);
+				netif_core_atcmd_reset(NETIF_4G,false);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 				// Callback
 				if(mqtt_client && mqtt_client->on_message){
 					mqtt_client->on_message(topic,payload);
@@ -145,15 +149,17 @@ netif_status_t netif_mqtt_run(){
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK:
 		case NETIF_4G_REPORT_MQTT_PUB_OK:
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
-            if(mqtt_client && mqtt_client->on_publish){
+			netif_core_atcmd_reset(NETIF_4G,false);
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
+			if(mqtt_client && mqtt_client->on_publish){
             	mqtt_client->on_publish(NETIF_OK);
             }
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL:
 		case NETIF_4G_REPORT_MQTT_PUB_FAIL:
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_4G,false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
             if(mqtt_client && mqtt_client->on_publish){
             	mqtt_client->on_publish(NETIF_FAIL);
             }
@@ -358,7 +364,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_config(netif_mqtt_client_t * clie
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Client Config to AP to Wifi Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_CLIENT_CONFIG,
 													1,
@@ -370,17 +376,17 @@ static netif_status_t netif_wifi_ethernet_mqtt_config(netif_mqtt_client_t * clie
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET,&response)){
 				if(response == NETIF_RESPONSE_OK ||
 						response == NETIF_RESPONSE_ERROR){	// Force Error is Sucess because don't have read command to get client status
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_CONFIG;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_CONFIG;
 						return NETIF_FAIL;
@@ -416,7 +422,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_connect(netif_mqtt_client_t * cli
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Connect to AP to Wifi Ethernet Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_CONNECT,
 												client->host,
@@ -427,9 +433,9 @@ static netif_status_t netif_wifi_ethernet_mqtt_connect(netif_mqtt_client_t * cli
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_CONNECT;
 					return NETIF_OK;
@@ -437,7 +443,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_connect(netif_mqtt_client_t * cli
 				else if(response == NETIF_RESPONSE_ERROR
 						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_CONNECT;
 						return NETIF_FAIL;
@@ -474,7 +480,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_disconnect(netif_mqtt_client_t * 
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Connect to AP to Wifi Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_DISCONNECT);
 				netif_core_wifi_ethernet_output(at_message, size);
@@ -482,10 +488,10 @@ static netif_status_t netif_wifi_ethernet_mqtt_disconnect(netif_mqtt_client_t * 
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &response)){
 				if(response == NETIF_RESPONSE_OK ||
 						response == NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_DISCONNECT;
 					return NETIF_OK;
@@ -493,7 +499,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_disconnect(netif_mqtt_client_t * 
 				else if(response == NETIF_RESPONSE_ERROR
 						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_DISCONNECT;
 						return NETIF_FAIL;
@@ -531,7 +537,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_subcribe(netif_mqtt_client_t * cl
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Subcribe Topic
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_SUBCRIBE,
 														topic,
@@ -541,16 +547,16 @@ static netif_status_t netif_wifi_ethernet_mqtt_subcribe(netif_mqtt_client_t * cl
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_SUBCRIBE;
 					return NETIF_OK;
 				}else if(response == NETIF_RESPONSE_ERROR
 						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_SUBCRIBE;
 						return NETIF_FAIL;
@@ -588,7 +594,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_unsubcribe(netif_mqtt_client_t * 
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Unsubcribe Request to Wifi Ethernet Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_UNSUBCRIBE,
 															topic);
@@ -597,10 +603,10 @@ static netif_status_t netif_wifi_ethernet_mqtt_unsubcribe(netif_mqtt_client_t * 
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET,&response)){
 				// In the Wifi Ethernet Mode
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_UNSUBCRIBE;
 					return NETIF_OK;
@@ -609,7 +615,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_unsubcribe(netif_mqtt_client_t * 
 				else if(response == NETIF_RESPONSE_ERROR
 						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_UNSUBCRIBE;
 						return NETIF_FAIL;
@@ -650,7 +656,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 				// Send Publish Request to Wifi Ethernet Module
 				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH,
 																	topic,
@@ -662,9 +668,9 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 			}
 			break;
 		case STATE_WIFI_ETHERNET_MQTT_PUBLISH_INPUT:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 					netif_core_wifi_ethernet_output(payload, strlen(payload));
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE;
@@ -673,7 +679,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 						 || response == NETIF_WIFI_ETHERNET_REPORT_BUSY){
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
-						netif_core_atcmd_reset(true);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
 						return NETIF_FAIL;
@@ -683,15 +689,15 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 				}
 				// Ignore other case
 				else{
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,false);
 				}
 			}
 			break;
 		case STATE_WIFI_ETHERNET_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &response)){
 				// For Wifi-Ethernet case
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 					retry = 0;
 					state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
 					return NETIF_OK;
@@ -701,7 +707,7 @@ static netif_status_t netif_wifi_ethernet_mqtt_publish(netif_mqtt_client_t * cli
 						 || response == NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL){
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
-						netif_core_atcmd_reset(true);
+						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET,true);
 						retry = 0;
 						state = STATE_WIFI_ETHERNET_MQTT_PUBLISH;
 						return NETIF_FAIL;
@@ -741,7 +747,7 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Client Config to AP to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_START);
 				netif_core_4g_output(at_message, size);
@@ -752,7 +758,7 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Client Config to AP to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_ACCQ,
 														client->client_id);
@@ -761,9 +767,9 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
 				if(response == NETIF_RESPONSE_OK ){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					retry = 0;
 					if(!started_flag){
 						started_flag = 1;
@@ -775,7 +781,7 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_4G ,false);
 						retry = 0;
 						state = STATE_4G_MQTT_START;
 						return NETIF_FAIL;
@@ -814,7 +820,7 @@ static netif_status_t netif_4g_mqtt_connect(netif_mqtt_client_t * client){
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Connect Command to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_CONNECT,
 																	client->host,
@@ -828,15 +834,15 @@ static netif_status_t netif_4g_mqtt_connect(netif_mqtt_client_t * client){
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					retry = 0;
 					state = STATE_4G_MQTT_CONNECT;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G ,false);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_CONNECT;
@@ -873,7 +879,7 @@ static netif_status_t netif_4g_mqtt_disconnect(netif_mqtt_client_t * client){
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Disconnect Request to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_DISCONNECT);
 				netif_core_4g_output(at_message, size);
@@ -881,15 +887,15 @@ static netif_status_t netif_4g_mqtt_disconnect(netif_mqtt_client_t * client){
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					retry = 0;
 					state = STATE_4G_MQTT_DISCONNECT;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G ,false);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_DISCONNECT;
@@ -931,7 +937,7 @@ static netif_status_t netif_4g_mqtt_subcribe(netif_mqtt_client_t * client, char 
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Subcribe Request to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_SUBSCRIBE,
 																			strlen(topic),
@@ -941,15 +947,17 @@ static netif_status_t netif_4g_mqtt_subcribe(netif_mqtt_client_t * client, char 
 			}
 			break;
 		case STATE_4G_MQTT_SUBCRIBE_TOPIC_INPUT:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
+					// Clear Before Data
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					netif_core_4g_output(topic, strlen(topic));
 					retry = 0;
 					state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
 					if(retry >= NETIF_MAX_RETRY){
-						netif_core_atcmd_reset(false);
+						netif_core_atcmd_reset(NETIF_4G ,false);
 						retry = 0;
 						state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
 						return NETIF_FAIL;
@@ -960,15 +968,15 @@ static netif_status_t netif_4g_mqtt_subcribe(netif_mqtt_client_t * client, char 
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					retry = 0;
 					state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
@@ -1011,7 +1019,7 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(true);
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Unsubcribe Request to 4G module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_UNSUBSCRIBE_TOPIC,
 																			strlen(topic));
@@ -1020,7 +1028,7 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 			}
 			break;
 		case STATE_4G_MQTT_UNSUBCRIBE_TOPIC_INPUT:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
 					netif_core_4g_output(topic, strlen(topic));
 					retry = 0;
@@ -1028,7 +1036,7 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 				}
 				// Fail Case
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G ,false);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
@@ -1040,15 +1048,15 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G,false);
 					retry = 0;
 					state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_4G,false);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
@@ -1093,6 +1101,8 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 	switch (state) {
 		case STATE_4G_MQTT_PUBLISH_TOPIC:
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_APPS_RETRY_INTERVAL){
+				// Clear rx buffer before publish
+				netif_core_atcmd_reset(NETIF_4G ,true);
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Send Publish Topic Len to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH_TOPIC,
@@ -1102,14 +1112,15 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_TOPIC_INPUT:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					netif_core_4g_output(topic, strlen(topic));
 					retry = 0;
 					state = STATE_4G_MQTT_PUBLISH_PAYLOAD;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
 						retry = 0;
@@ -1122,9 +1133,9 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_PAYLOAD:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset( NETIF_4G , true);
 					// Send Publish Payload Len to 4G Module
 					size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH_PAYLOAD,
 															strlen(payload));
@@ -1134,7 +1145,7 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 					state = STATE_4G_MQTT_PUBLISH_PAYLOAD_INPUT;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
@@ -1146,16 +1157,17 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_PAYLOAD_INPUT:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
 					// Transmit Payload
+					netif_core_atcmd_reset(NETIF_4G ,true);
 					netif_core_4g_output(payload, strlen(payload));
 					retry = 0;
 					// Switch to Publish Message
 					state = STATE_4G_MQTT_PUBLISH;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G,true);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
@@ -1167,9 +1179,9 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH:
-				if(netif_core_atcmd_is_responded(&response)){
+				if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 					if(response == NETIF_RESPONSE_OK){
-						netif_core_atcmd_reset(true);
+						netif_core_atcmd_reset(NETIF_4G,true);
 						// Publish Message
 						size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH,
 																qos,
@@ -1182,7 +1194,7 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 						state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 					}
 					else if(response == NETIF_RESPONSE_ERROR){
-						netif_core_atcmd_reset(true);
+						netif_core_atcmd_reset(NETIF_4G,true);
 						if(retry >= NETIF_MAX_RETRY){
 							retry = 0;
 							state = STATE_4G_MQTT_PUBLISH_TOPIC;
@@ -1194,16 +1206,16 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 				}
 				break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
-			if(netif_core_atcmd_is_responded(&response)){
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					// Reset Buffer
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G,true);
 					// Switch to Publish Message
 					state = STATE_4G_MQTT_PUBLISH_TOPIC;
 					return NETIF_OK;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
-					netif_core_atcmd_reset(true);
+					netif_core_atcmd_reset(NETIF_4G,true);
 					if(retry >= NETIF_MAX_RETRY){
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
@@ -1238,14 +1250,14 @@ static bool netif_wifi_ethernet_mqtt_parse_on_message(){
 	uint8_t data;
 	switch (state) {
 		case 0:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == ','){
 					state = 1;
 				}
 			}
 			break;
 		case 1:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == ','){
 					state = 2;
 				}else if(data != '"' ){
@@ -1254,16 +1266,16 @@ static bool netif_wifi_ethernet_mqtt_parse_on_message(){
 			}
 			break;
 		case 2:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == ','){
 					state = 3;
 				}
 			}
 			break;
 		case 3:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == '\n'){
-					netif_core_atcmd_reset(false);
+					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
 					state = 0;
 					return true;
 				}else{
@@ -1293,7 +1305,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 	switch (state) {
 		// Check Topic Pattern
 		case 0:
-			if(netif_core_atcmd_get_data_after(&on_message_buffer[on_message_buffer_index++])){
+			if(netif_core_atcmd_get_data_after(NETIF_4G,&on_message_buffer[on_message_buffer_index++])){
 				// Check Pattern is match or not
 				if(utils_string_is_receive_data(on_message_buffer, on_message_buffer_index, topic_pattern)){
 					on_message_buffer_index = 0;
@@ -1303,7 +1315,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 			break;
 		// Delete Suffix
 		case 1:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_4G,&data)){
 				// If is EOL -> Start Get Topic
 				if(data == '\n'){
 					state = 2;
@@ -1311,7 +1323,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 			}
 			break;
 		case 2:
-			if(netif_core_atcmd_get_data_after(&on_message_buffer[on_message_buffer_index++])){
+			if(netif_core_atcmd_get_data_after(NETIF_4G,&on_message_buffer[on_message_buffer_index++])){
 				// Check Pattern is match or not
 				if(utils_string_is_receive_data(on_message_buffer, on_message_buffer_index, payload_pattern)){
 					// Get Topic
@@ -1324,7 +1336,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 			break;
 		// Delete Suffix
 		case 3:
-			if(netif_core_atcmd_get_data_after(&data)){
+			if(netif_core_atcmd_get_data_after(NETIF_4G,&data)){
 				// If is EOL -> Start Get Topic
 				if(data == '\n'){
 					state = 4;
@@ -1332,7 +1344,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 			}
 			break;
 		case 4:
-			if(netif_core_atcmd_get_data_after(&on_message_buffer[on_message_buffer_index++])){
+			if(netif_core_atcmd_get_data_after(NETIF_4G,&on_message_buffer[on_message_buffer_index++])){
 				// Check Pattern is match or not
 				if(utils_string_is_receive_data(on_message_buffer, on_message_buffer_index, end_pattern)){
 					// Get Payload

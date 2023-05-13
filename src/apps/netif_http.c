@@ -65,11 +65,11 @@ netif_status_t netif_http_send_get_request(netif_http_request_t * request){
         break;
     case 1:
         // Wait Connect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Reset step
             step = 0;
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 // Switch to Send Post data
@@ -111,9 +111,9 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
         break;
     case 1:
         // Wait HTTP Post Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 // Wait for receive input indicator
@@ -126,9 +126,9 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
         }
         break;
     case 2:
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_INPUT){
                 // Send Post data
@@ -148,9 +148,9 @@ netif_status_t netif_http_send_post_request(netif_http_request_t * request){
         break;
     case 4:
         // Wait HTTP Post Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_WIFI_ETHERNET_RESPONSE_SEND_OK){
                 // Reset step 

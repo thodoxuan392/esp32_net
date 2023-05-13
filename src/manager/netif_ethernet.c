@@ -32,21 +32,21 @@ netif_status_t netif_ethernet_run(){
     uint8_t *data;
     size_t data_size;
     // Check Wifi Event
-    if(netif_core_atcmd_is_responded(&at_response)){
+    if(netif_core_atcmd_is_responded(NETIF_4G, &at_response)){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED:
         	utils_log_info("Ethernet connected\r\n");
             /* code */
             ethernet_connected = true;
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             return NETIF_OK;
             break;
         case NETIF_WIFI_ETHERNET_REPORT_ETH_DISCONNECTED:
         	utils_log_info("Ethernet disconnected\r\n");
             /* code */
             ethernet_connected = false;
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_4G, false);
             return NETIF_OK;
             break;
         default:
@@ -119,13 +119,13 @@ netif_status_t netif_ethernet_get_ip(char * ip, size_t ip_max_size){
 
 		}
         // Wait Disconnect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_4G, &at_response)){
             // Get Data from Core Buffer
-            netif_core_atcmd_get_data_before(&data, &data_size);
+            netif_core_atcmd_get_data_before(NETIF_4G, &data, &data_size);
             // Handle data to get IP
             // TODO: ...
             // Reset Core ATCMD buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_4G, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -177,13 +177,13 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
 
 		}
         // Wait Disconnect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_4G, &at_response)){
             // Get Data from Core Buffer
-            netif_core_atcmd_get_data_before(&data, &data_size);
+            netif_core_atcmd_get_data_before(NETIF_4G, &data, &data_size);
             // Handle data to get IP
             // TODO: ...
             // Reset Core ATCMD buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_4G, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;

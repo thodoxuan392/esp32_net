@@ -58,50 +58,50 @@ netif_status_t netif_wifi_run(){
     netif_core_response_t at_response;
     uint8_t *data;
     size_t data_size;
-    if(netif_core_atcmd_is_responded(&at_response)){
+    if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_CONNECTED:
         	utils_log_info("Wifi Connected\r\n");
             /* code */
             wifi_connected = true;
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_GOT_IP:
         	utils_log_info("Wifi Got IP\r\n");
         	// Get data from Core Buffer
-			netif_core_atcmd_get_data_before(&data,&data_size);
+			netif_core_atcmd_get_data_before(NETIF_WIFI_ETHERNET, &data,&data_size);
 			// Get IP
 			// TODO:
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_WIFI_DISCONNECTED:
         	utils_log_info("Wifi Disconnected\r\n");
             /* code */
             wifi_connected = false;
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE:
         	utils_log_info("Smartconfig Type\r\n");
             // Reset ATCMD
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_CONNECTED_AP:
         	utils_log_info("Smartconfig connected\r\n");
             // Set flag smartconfig_done to true
             smartconfig_done = true;
             // Reset ATCMD
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         case NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_INFO:
         	utils_log_info("Smartconfig get info\r\n");
             smartconfig_done = true;
             // Get data from Core Buffer
-            netif_core_atcmd_get_data_before(&data,&data_size);
+            netif_core_atcmd_get_data_before(NETIF_WIFI_ETHERNET, &data,&data_size);
             // Get SSID and Pass
             // TODO: Get SSID and Pass
             // Reset ATCMD
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             break;
         default:
             break;
@@ -140,6 +140,7 @@ netif_status_t netif_wifi_station_mode(){
     	last_time_sent = NETIF_GET_TIME_MS();
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_STATION_MODE);
+        netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
         netif_core_wifi_ethernet_output(at_message, size);
         // Switch wait to Connect AP Response
         step = 1;
@@ -147,8 +148,8 @@ netif_status_t netif_wifi_station_mode(){
     case 1:
 		// Check Timeout
 		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT * 5){
-			netif_core_atcmd_reset(true);
-			utils_log_error("Timeout to receive station mode response");
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
+			utils_log_error("Timeout to receive station mode response\r\n");
 			// Reset State
 			step = 0;
 			// Return TIMEOUT
@@ -156,11 +157,11 @@ netif_status_t netif_wifi_station_mode(){
 
 		}
         // Wait Connect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
         	// Reset State
         	step = 0;
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(true);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -212,9 +213,9 @@ netif_status_t netif_wifi_connect_ap(char *ssid, char * password){
 
 		}
         // Wait Connect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -261,9 +262,9 @@ netif_status_t netif_wifi_disconnect_ap(){
 
 		}
         // Wait Disconnect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -309,6 +310,7 @@ netif_status_t netif_wifi_reconnect(){
 		last_time_sent = NETIF_GET_TIME_MS();
 		// Send Connect to AP to Wifi Module
 		size = sprintf(at_message, NETIF_ATCMD_WIFI_RECONNECT);
+		netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
 		netif_core_wifi_ethernet_output(at_message, size);
 		// Switch wait to Wait Disconnect AP Response
 		step = 1;
@@ -323,10 +325,10 @@ netif_status_t netif_wifi_reconnect(){
 
 		}
 		// Wait Reconnect AP Response
-		if(netif_core_atcmd_is_responded(&at_response)){
+		if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
 			step = 0;
 			// Donot use data from response -> Clean Core Buffer
-			netif_core_atcmd_reset(false);
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
 			// Check AT Response
 			if(at_response == NETIF_RESPONSE_OK){
 				return NETIF_OK;
@@ -373,9 +375,9 @@ netif_status_t netif_wifi_start_smartconfig(){
 
 		}
         // Wait Disconnect AP Response
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;
@@ -422,9 +424,9 @@ netif_status_t netif_wifi_stop_smartconfig(){
 
 		}
         // Wait ATCMD Reponse
-        if(netif_core_atcmd_is_responded(&at_response)){
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
             // Donot use data from response -> Clean Core Buffer
-            netif_core_atcmd_reset(false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             // Check AT Response
             if(at_response == NETIF_RESPONSE_OK){
                 return NETIF_OK;

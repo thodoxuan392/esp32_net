@@ -6,6 +6,12 @@
 #include "netif_opts.h"
 #include "netif_def.h"
 
+
+typedef enum {
+	NETIF_WIFI_ETHERNET,
+	NETIF_4G
+}netif_module_t;
+
 typedef enum{
     NETIF_RESPONSE_OK = 0,
     NETIF_RESPONSE_ERROR,
@@ -76,7 +82,7 @@ netif_status_t netif_core_deinit();
  * @return true if have response
  * @return false if not
  */
-bool netif_core_atcmd_is_responded(netif_core_response_t* response);
+bool netif_core_atcmd_is_responded(netif_module_t module, netif_core_response_t* response);
 
 /**
  * @brief Get Data Before the AT Reponse
@@ -86,7 +92,7 @@ bool netif_core_atcmd_is_responded(netif_core_response_t* response);
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size);
+bool netif_core_atcmd_get_data_before(netif_module_t module, uint8_t **data, size_t * data_size);
 
 
 /**
@@ -97,7 +103,7 @@ bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size);
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data_after(uint8_t *data);
+bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data);
 
 /**
  * @brief Reset AT Command Buffer and Response Result
@@ -105,7 +111,7 @@ bool netif_core_atcmd_get_data_after(uint8_t *data);
  * @return true if Ok
  * @return false if false
  */
-bool netif_core_atcmd_reset(bool reset_buffer);
+bool netif_core_atcmd_reset(netif_module_t module ,bool reset_buffer);
 
 
 // Specific Function

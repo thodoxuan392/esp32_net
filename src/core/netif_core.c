@@ -55,45 +55,48 @@ static netif_core_response_t at_response_4g;
 // Internal Function
 static void netif_core_process_response(){
 	// If at_response is'not reset -> Ignore
-	if(at_response_wifi_ethernet_indication == true){
-		return;
+	if(!at_response_wifi_ethernet_indication){
+		if(utils_buffer_is_available(&buffer_wifi_ethernet)){
+			volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index];
+			core_wifi_ethernet_buffer_index = (core_wifi_ethernet_buffer_index+1) % BUFFER_MAX_SIZE;
+			utils_buffer_pop(&buffer_wifi_ethernet,data_p);
+			// Check Response buffer match with any in at reponse table
+			for (size_t i = 0; i < at_response_table_size; i++)
+			{
+				if (utils_string_is_receive_data(core_wifi_ethernet_buffer,
+													core_wifi_ethernet_buffer_index,
+													at_response_table[i])){
+					// Match with index i
+					at_response_wifi_ethernet = (netif_core_response_t)i;
+	//                utils_log_debug("Wifi-Ethernet response: %d\r\n", at_response_wifi_ethernet);
+					at_response_wifi_ethernet_indication = true;
+					break;
+				}
+			}
+		}
 	}
-    if(utils_buffer_is_available(&buffer_wifi_ethernet)){
-        volatile uint8_t * data_p = &core_wifi_ethernet_buffer[core_wifi_ethernet_buffer_index];
-        core_wifi_ethernet_buffer_index = (core_wifi_ethernet_buffer_index+1) % BUFFER_MAX_SIZE;
-        utils_buffer_pop(&buffer_wifi_ethernet,data_p);
-        // Check Response buffer match with any in at reponse table
-        for (size_t i = 0; i < at_response_table_size; i++)
-        {
-            if (utils_string_is_receive_data(core_wifi_ethernet_buffer,
-                                                core_wifi_ethernet_buffer_index,
-                                                at_response_table[i])){
-                // Match with index i
-            	at_response_wifi_ethernet = (netif_core_response_t)i;
-//                utils_log_debug("Wifi-Ethernet response: %d\r\n", at_response_wifi_ethernet);
-                at_response_wifi_ethernet_indication = true;
-                break;
-            }
-        }
-    }
-    if(utils_buffer_is_available(&buffer_4g)){
-        volatile uint8_t * data_p = &core_4g_buffer[core_4g_buffer_index];
-        core_4g_buffer_index = (core_4g_buffer_index+1) % BUFFER_MAX_SIZE;
-        utils_buffer_pop(&buffer_4g,data_p);
-        // Check Response buffer match with any in at reponse table
-        for (size_t i = 0; i < at_response_table_size; i++)
-        {
-            if (utils_string_is_receive_data(core_4g_buffer,
-            									core_4g_buffer_index,
-                                                at_response_table[i])){
-                // Match with index i
-            	at_response_4g = (netif_core_response_t)i;
-//            	utils_log_debug("4G response: %d\r\n", at_response_4g);
-                at_response_4g_indication = true;
-                break;
-            }
-        }
-    }
+
+	if(!at_response_4g_indication){
+		if(utils_buffer_is_available(&buffer_4g)){
+			volatile uint8_t * data_p = &core_4g_buffer[core_4g_buffer_index];
+			core_4g_buffer_index = (core_4g_buffer_index+1) % BUFFER_MAX_SIZE;
+			utils_buffer_pop(&buffer_4g,data_p);
+			// Check Response buffer match with any in at reponse table
+			for (size_t i = 0; i < at_response_table_size; i++)
+			{
+				if (utils_string_is_receive_data(core_4g_buffer,
+													core_4g_buffer_index,
+													at_response_table[i])){
+					// Match with index i
+					at_response_4g = (netif_core_response_t)i;
+	//            	utils_log_debug("4G response: %d\r\n", at_response_4g);
+					at_response_4g_indication = true;
+					break;
+				}
+			}
+		}
+	}
+
 }
 
 // Generic Function
@@ -153,15 +156,23 @@ netif_status_t netif_core_deinit(){
  * @return true if have response
  * @return false if not
  */
-bool netif_core_atcmd_is_responded(netif_core_response_t* response){
-    if(at_response_wifi_ethernet_indication){
-        *response = at_response_wifi_ethernet;
-        return true;
-    }
-    if(at_response_4g_indication){
-    	*response = at_response_4g;
-    	return true;
-    }
+bool netif_core_atcmd_is_responded(netif_module_t module, netif_core_response_t* response){
+	switch (module) {
+		case NETIF_4G:
+			if(at_response_4g_indication){
+				*response = at_response_4g;
+				return true;
+			}
+			break;
+		case NETIF_WIFI_ETHERNET:
+			if(at_response_wifi_ethernet_indication){
+				*response = at_response_wifi_ethernet;
+				return true;
+			}
+			break;
+		default:
+			break;
+	}
     return false;
 }
 
@@ -173,17 +184,24 @@ bool netif_core_atcmd_is_responded(netif_core_response_t* response){
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size){
-    if(at_response_wifi_ethernet_indication){
-        *data = core_wifi_ethernet_buffer;
-        *data_size = core_wifi_ethernet_buffer_index;
-        return true;
-    }
-    if(at_response_4g_indication){
-        *data = core_4g_buffer;
-        *data_size = core_4g_buffer_index;
-        return true;
-    }
+bool netif_core_atcmd_get_data_before(netif_module_t module, uint8_t **data, size_t * data_size){
+	switch (module) {
+		case NETIF_4G:
+			if(at_response_4g_indication){
+				*data = core_4g_buffer;
+				*data_size = core_4g_buffer_index;
+				return true;
+			}
+			break;
+		case NETIF_WIFI_ETHERNET:
+			if(at_response_wifi_ethernet_indication){
+				*data = core_wifi_ethernet_buffer;
+				*data_size = core_wifi_ethernet_buffer_index;
+				return true;
+			}
+		default:
+			break;
+	}
     return false;
 }
 
@@ -196,19 +214,26 @@ bool netif_core_atcmd_get_data_before(uint8_t **data, size_t * data_size){
  * @return true if OK
  * @return false if failed
  */
-bool netif_core_atcmd_get_data_after(uint8_t *data){
-	if(at_response_wifi_ethernet_indication){
-		if(utils_buffer_is_available(&buffer_wifi_ethernet)){
-			utils_buffer_pop(&buffer_wifi_ethernet,data);
-			return true;
-		}
-	}
-
-	if(at_response_4g_indication){
-		if(utils_buffer_is_available(&buffer_4g)){
-			utils_buffer_pop(&buffer_4g,data);
-			return true;
-		}
+bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data){
+	switch (module) {
+		case NETIF_4G:
+			if(at_response_4g_indication){
+				if(utils_buffer_is_available(&buffer_4g)){
+					utils_buffer_pop(&buffer_4g,data);
+					return true;
+				}
+			}
+			break;
+		case NETIF_WIFI_ETHERNET:
+			if(at_response_wifi_ethernet_indication){
+				if(utils_buffer_is_available(&buffer_wifi_ethernet)){
+					utils_buffer_pop(&buffer_wifi_ethernet,data);
+					return true;
+				}
+			}
+			break;
+		default:
+			break;
 	}
 	return false;
 }
@@ -219,15 +244,25 @@ bool netif_core_atcmd_get_data_after(uint8_t *data){
  * @return true if Ok
  * @return false if false
  */
-bool netif_core_atcmd_reset(bool reset_buffer){
-	if(reset_buffer){
-		core_wifi_ethernet_buffer_index = 0;
-		memset(core_wifi_ethernet_buffer,0,BUFFER_MAX_SIZE);
-		core_4g_buffer_index = 0;
-		memset(core_4g_buffer,0,BUFFER_MAX_SIZE);
+bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
+	switch (module) {
+		case NETIF_4G:
+			if(reset_buffer){
+				core_4g_buffer_index = 0;
+				memset(core_4g_buffer,0,BUFFER_MAX_SIZE);
+			}
+			at_response_4g_indication = false;
+			break;
+		case NETIF_WIFI_ETHERNET:
+			if(reset_buffer){
+				core_wifi_ethernet_buffer_index = 0;
+				memset(core_wifi_ethernet_buffer,0,BUFFER_MAX_SIZE);
+			}
+			at_response_wifi_ethernet_indication = false;
+			break;
+		default:
+			break;
 	}
-    at_response_wifi_ethernet_indication = false;
-    at_response_4g_indication = false;
     return true;
 }
 

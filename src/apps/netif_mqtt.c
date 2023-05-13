@@ -97,13 +97,17 @@ netif_status_t netif_mqtt_run(){
 		case NETIF_4G_REPORT_MQTT_CONNECTED:
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
-            mqtt_client->on_connect(NETIF_OK);
+            if(mqtt_client && mqtt_client->on_connect){
+            	mqtt_client->on_connect(NETIF_OK);
+            }
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_DISCONNECTED:
 		case NETIF_4G_REPORT_MQTT_DISCONNECTED:
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
-            mqtt_client->on_disconnect(NETIF_OK);
+            if(mqtt_client && mqtt_client->on_disconnect){
+            	mqtt_client->on_disconnect(NETIF_OK);
+            }
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK:
 			// Handle data when have on message for Wifi Ethernet
@@ -111,9 +115,9 @@ netif_status_t netif_mqtt_run(){
         	if(netif_wifi_ethernet_mqtt_parse_on_message()){
         		// Clear AT Response
         		netif_core_atcmd_reset(false);
-        		mqtt_client->on_message(topic,payload);
-				// Callback
-				mqtt_client->on_message(topic,payload);
+				if(mqtt_client && mqtt_client->on_message){
+				 mqtt_client->on_message(topic,payload);
+				}
 				// Reset Parameters
             	topic_len = 0;
             	payload_len = 0;
@@ -128,8 +132,9 @@ netif_status_t netif_mqtt_run(){
 				// Clear AT response
 				netif_core_atcmd_reset(false);
 				// Callback
-				mqtt_client->on_message(topic,payload);
-
+				if(mqtt_client && mqtt_client->on_message){
+					mqtt_client->on_message(topic,payload);
+				}
 				// Reset Parameters
 				topic_len = 0;
 				payload_len = 0;
@@ -141,13 +146,17 @@ netif_status_t netif_mqtt_run(){
 		case NETIF_4G_REPORT_MQTT_PUB_OK:
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
-            mqtt_client->on_publish(NETIF_OK);
+            if(mqtt_client && mqtt_client->on_publish){
+            	mqtt_client->on_publish(NETIF_OK);
+            }
             break;
         case NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL:
 		case NETIF_4G_REPORT_MQTT_PUB_FAIL:
             // Donot use data from response -> Clean Core Buffer
             netif_core_atcmd_reset(false);
-            mqtt_client->on_publish(NETIF_FAIL);
+            if(mqtt_client && mqtt_client->on_publish){
+            	mqtt_client->on_publish(NETIF_FAIL);
+            }
             break;
         default:
             break;

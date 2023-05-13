@@ -243,7 +243,6 @@ static void netif_manager_disconnect_mode(){
             	utils_log_error("Wifi not connected\r\n");
             	// Check Start Config Run Before
 				if(!smartconfig_started){
-					smartconfig_started = true;
 					step = 3;	// Switch to SmartConfig
 				}else{
 					step = 0;	// Reset to check 4g connection
@@ -272,6 +271,7 @@ static void netif_manager_disconnect_mode(){
 		// Start Smartconfig
 		ret = netif_wifi_start_smartconfig();
 		if(ret != NETIF_IN_PROCESS){
+			smartconfig_started = true;
 			previous_time = NETIF_GET_TIME_MS();
 			utils_log_info("Started Smartconfig OK\r\n");
 			step = 0;

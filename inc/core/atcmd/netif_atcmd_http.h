@@ -4,11 +4,11 @@
 /***************************** Wifi-Ethernet HTTP AT Command***************************/
 
 // Wifi-Ethernet HTTP Get Request (url)
-#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_GET  "AT+HTTPCGET=%s\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_GET  "AT+HTTPCGET=%s\r\n"
 // Wifi-Ethernet HTTP Post Request (url,length)
-#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_POST "AT+HTTPCPOST=%s,%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_POST "AT+HTTPCPOST=%s,%d\r\n"
 // Wifi-Ethernet HTTP Put Request (url,length)
-#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_PUT  "AT+HTTPCPUT=%s,%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_HTTP_PUT  "AT+HTTPCPUT=%s,%d\r\n"
 
 
 /***************************** 4G HTTP AT Command***************************/

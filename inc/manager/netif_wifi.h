@@ -71,6 +71,14 @@ netif_status_t netif_wifi_disconnect_ap();
 netif_status_t netif_wifi_is_connected(bool *connected);
 
 /**
+ * @brief Reconnect to last wifi
+ *
+ * @return true If Station is connected to SoftAP
+ * @return false If failed or timeout
+ */
+netif_status_t netif_wifi_reconnect();
+
+/**
  * @brief Start SmartConfig 
  * 
  * @return netif_status_t State of Process
@@ -84,22 +92,6 @@ netif_status_t netif_wifi_start_smartconfig();
  */
 netif_status_t netif_wifi_stop_smartconfig();
 
-/**
- * @brief Get Ip Address of Wifi Station
- * 
- * @param ip Pointer to Ip String Buffer
- * @param ip_max_size Ip String Buffer Max Size
- * @return netif_status_t State of Process
- */
-netif_status_t netif_wifi_get_ip(char *ip , size_t ip_max_size);
 
-/**
- * @brief Get Mac Address of Wifi Station
- * 
- * @param mac Pointer to Mac String Buffer
- * @param mac_max_size Mac String Buffer Max Size
- * @return netif_status_t State of Process
- */
-netif_status_t netif_wifi_get_mac(char *mac , size_t mac_max_size);
 
 #endif // NETIF_WIFI_H

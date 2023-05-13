@@ -5,21 +5,21 @@
 /***************************** Wifi-Ethernet MQTT AT Command***************************/
 
 // Wifi-Ethernet Client Configuration (link_id,scheme,client_id,username,password)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CLIENT_CONFIG        "AT+MQTTUSERCFG=0,%d,\"%s\",\"%s\",\"%s\",0,0,\"\"\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CLIENT_CONFIG        "AT+MQTTUSERCFG=0,%d,\"%s\",\"%s\",\"%s\",0,0,\"\"\r\n"
 // Wifi-Ethernet Connect to MQTT Broker (link_id,host,port,reconnect)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CONNECT_QUERY        "AT+MQTTCONN?\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CONNECT_QUERY        "AT+MQTTCONN?\r\n"
 // Wifi-Ethernet Connect to MQTT Broker (link_id,host,port,reconnect)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CONNECT              "AT+MQTTCONN=0,\"%s\",%d,%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_CONNECT              "AT+MQTTCONN=0,\"%s\",%d,%d\r\n"
 // Wifi-Ethernet Disconnect from MQTT Broker
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_DISCONNECT           "AT+MQTTCLEAN=0\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_DISCONNECT           "AT+MQTTCLEAN=0\r\n"
 // Wifi-Ethernet Subcribe to Topic (link_id,topic,qos)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_SUBCRIBE             "AT+MQTTSUB=0,\"%s\",%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_SUBCRIBE             "AT+MQTTSUB=0,\"%s\",%d\r\n"
 // Wifi-Ethernet Unsubcribe from Topic (link_id,topic)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_UNSUBCRIBE           "AT+MQTTUNSUB=0,\"%s\"\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_UNSUBCRIBE           "AT+MQTTUNSUB=0,\"%s\"\r\n"
 // Wifi-Ethernet Publish Message to Topic (link_id,topic,data,qos,retain)
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH              "AT+MQTTPUBRAW=0,\"%s\",%d,%d,%d\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_PUBLISH              "AT+MQTTPUBRAW=0,\"%s\",%d,%d,%d\r\n"
 // Wifi-Ethernet Get MQTT Connection State
-#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_GET_CONNECTION       "AT+MQTTCONN?\n"
+#define NETIF_ATCMD_WIFI_ETHERNET_MQTT_GET_CONNECTION       "AT+MQTTCONN?\r\n"
 
 
 /***************************** 4G MQTT AT Command***************************/

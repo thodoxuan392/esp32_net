@@ -209,7 +209,7 @@ netif_status_t netif_4g_is_internet_connected(bool *connected){
 
 static netif_status_t netif_4g_startup(){
 	// Startup 4G Module
-	static uint8_t state = STATE_4G_STARTUP;
+	static uint8_t state = STATE_4G_STARTUP_RESET_ENA;
 	static uint32_t last_time_sent = 0;
 	netif_core_response_t response;
 	int size;

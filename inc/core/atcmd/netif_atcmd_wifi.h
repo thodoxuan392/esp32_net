@@ -5,6 +5,8 @@
 #define NETIF_ATCMD_WIFI_STATION_MODE "AT+CWMODE=1,1\r\n"
 // Configurate AutoReconnect with 100 max times
 #define NETIF_ATCMD_WIFI_RECONNECT_CONFIG "AT+CWRECONNCFG=5,100\r\n"
+// Reset wifi
+#define NETIF_ATCMD_WIFI_RESET 	"AT+RST\r\n"
 // Wifi Reconnect
 #define NETIF_ATCMD_WIFI_RECONNECT "AT+CWJAP\r\n"
 // Connect to AP using ssid, password

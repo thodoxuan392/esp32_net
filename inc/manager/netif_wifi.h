@@ -70,6 +70,15 @@ netif_status_t netif_wifi_disconnect_ap();
  */
 netif_status_t netif_wifi_is_connected(bool *connected);
 
+
+/**
+ * @brief Reset wifi
+ *
+ * @return true If Station is connected to SoftAP
+ * @return false If failed or timeout
+ */
+netif_status_t netif_wifi_reset();
+
 /**
  * @brief Reconnect to last wifi
  *

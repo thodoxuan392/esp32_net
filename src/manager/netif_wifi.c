@@ -22,7 +22,7 @@ static char * setting_command[] = {
 };
 // Wifi Ethernet State
 enum {
-
+	STATE_WIFI_RESET,
 	STATE_WIFI_DISCONNECTED,
 	STATE_WIFI_WAIT_FOR_CONNECTED,
 	STATE_WIFI_CONNECTED,
@@ -293,6 +293,59 @@ netif_status_t netif_wifi_is_connected(bool * connected){
     return NETIF_OK;
 }
 
+
+/**
+ * @brief Check Connection Status of Wifi Status
+ *
+ * @return true If Station is connected to SoftAP
+ * @return false If failed or timeout
+ */
+netif_status_t netif_wifi_reset(){
+	static uint8_t step = 0;
+	static uint32_t last_time_sent;
+	netif_core_response_t at_response;
+	int size;
+	switch (step)
+	{
+	case 0:
+		last_time_sent = NETIF_GET_TIME_MS();
+		// Send Connect to AP to Wifi Module
+		size = sprintf(at_message, NETIF_ATCMD_WIFI_RESET);
+		netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
+		netif_core_wifi_ethernet_output(at_message, size);
+		// Switch wait to Wait Disconnect AP Response
+		step = 1;
+		break;
+	case 1:
+		// Check Timeout
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+			// Reset State
+			step = 0;
+			// Return TIMEOUT
+			return NETIF_TIMEOUT;
+
+		}
+		// Wait Reconnect AP Response
+		if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
+			step = 0;
+			// Donot use data from response -> Clean Core Buffer
+			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
+			// Check AT Response
+			if(at_response == NETIF_RESPONSE_OK){
+				return NETIF_OK;
+			}else{
+				return NETIF_FAIL;
+			}
+		}
+
+		break;
+	default:
+		break;
+	}
+	return NETIF_IN_PROCESS;
+}
+
+
 /**
  * @brief Check Connection Status of Wifi Status
  *
@@ -445,7 +498,7 @@ netif_status_t netif_wifi_stop_smartconfig(){
 static netif_status_t netif_wifi_fsm(){
 	// Setting Wifi Module
 	static size_t nb_setting_command = sizeof(setting_command) / sizeof(setting_command[0]);
-	static uint8_t step = STATE_WIFI_WAIT_FOR_CONNECTED;
+	static uint8_t step = STATE_WIFI_RESET;
 	static uint8_t retry = 0;
 	static uint32_t last_time_sent = 0;
 	static uint8_t current_command_idx = 0;
@@ -453,6 +506,13 @@ static netif_status_t netif_wifi_fsm(){
 	netif_status_t ret;
 	int size;
 	switch (step) {
+	case STATE_WIFI_RESET:
+		ret = netif_wifi_reset();
+		if (ret != NETIF_IN_PROCESS){
+			last_time_sent = NETIF_GET_TIME_MS();
+			step = STATE_WIFI_DISCONNECTED;
+		}
+		break;
 	case STATE_WIFI_DISCONNECTED:
 		ret = netif_wifi_reconnect();
 		if (ret != NETIF_IN_PROCESS){

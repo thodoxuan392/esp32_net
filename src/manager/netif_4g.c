@@ -3,7 +3,7 @@
 #include "core/atcmd/netif_atcmd_4g.h"
 #include "utils/utils_logger.h"
 
-
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
@@ -374,3 +374,6 @@ static bool netif_4g_handle_imei_response(uint8_t *data, uint16_t data_size, uin
     }
     return false;
 }
+
+
+#endif

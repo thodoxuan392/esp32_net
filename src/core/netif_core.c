@@ -8,10 +8,10 @@ static const char * at_response_table[] = {
     [NETIF_RESPONSE_OK] = "OK",
     [NETIF_RESPONSE_ERROR] = "ERROR",
     [NETIF_RESPONSE_INPUT] = ">",
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
     [NETIF_WIFI_ETHERNET_RESPONSE_SEND_OK] = "SEND OK",
     [NETIF_WIFI_ETHERNET_RESPONSE_SEND_FAIL] = "SEND FAIL",
     [NETIF_WIFI_ETHERNET_RESPONSE_SET_OK] = "SET OK",
-    [NETIF_WIFI_ETHERNET_REPORT_READY] = "ready",
     [NETIF_WIFI_ETHERNET_REPORT_BUSY] = "busy p...",
     [NETIF_WIFI_ETHERNET_REPORT_FORCE_RESTART] = "Will force to restart!!!",
     [NETIF_WIFI_ETHERNET_REPORT_SMARTCONFIG_TYPE] = "smartconfig type",
@@ -28,32 +28,43 @@ static const char * at_response_table[] = {
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_MESSAGE_OK] = "+MQTTSUBRECV:",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_OK] = "+MQTTPUB:OK",
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL] = "+MQTTPUB:FAIL",
+#endif
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
     [NETIF_4G_REPORT_INITIALIZE_DONE] = "PB DONE",
     [NETIF_4G_REPORT_MQTT_CONNECTED] = "+CMQTTCONNECT: 0,0",        // client index is 0, err is 0
     [NETIF_4G_REPORT_MQTT_DISCONNECTED] = "+CMQTTCONNLOST: 0",
     [NETIF_4G_REPORT_MQTT_MESSAGE_OK] = "+CMQTTRXSTART: 0",
     [NETIF_4G_REPORT_MQTT_PUB_OK] = "+CMQTTPUB: 0,0",
+#endif
+
 };
 static uint16_t at_response_table_size = sizeof(at_response_table)/sizeof(at_response_table[0]);
 
-// Netif Buffer to receive response from Module
-static utils_buffer_t buffer_4g;
-static utils_buffer_t buffer_wifi_ethernet;
 
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
+static utils_buffer_t buffer_wifi_ethernet;
 // Core buffer for Wifi-Ethernet Module
 static uint8_t core_wifi_ethernet_buffer[BUFFER_MAX_SIZE];
 static uint16_t core_wifi_ethernet_buffer_index = 0;
 static bool at_response_wifi_ethernet_indication = false;
+static netif_core_response_t at_response_wifi_ethernet;
+#endif
+
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
+// Netif Buffer to receive response from Module
+static utils_buffer_t buffer_4g;
 // Core buffer for 4G Module
 static uint8_t core_4g_buffer[BUFFER_MAX_SIZE];
 static uint16_t core_4g_buffer_index = 0;
 static bool at_response_4g_indication = false;
 // AT Indication
-static netif_core_response_t at_response_wifi_ethernet;
 static netif_core_response_t at_response_4g;
+#endif
+
 
 // Internal Function
 static void netif_core_process_response(){
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 	// If at_response is'not reset -> Ignore
 	if(!at_response_wifi_ethernet_indication){
 		if(utils_buffer_is_available(&buffer_wifi_ethernet)){
@@ -75,7 +86,9 @@ static void netif_core_process_response(){
 			}
 		}
 	}
+#endif
 
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 	if(!at_response_4g_indication){
 		if(utils_buffer_is_available(&buffer_4g)){
 			volatile uint8_t * data_p = &core_4g_buffer[core_4g_buffer_index];
@@ -96,7 +109,7 @@ static void netif_core_process_response(){
 			}
 		}
 	}
-
+#endif
 }
 
 // Generic Function
@@ -109,8 +122,12 @@ static void netif_core_process_response(){
 netif_status_t netif_core_init(){
 	utils_log_debug("Netif Core Init\r\n");
     // Cleanup Buffer
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
     utils_buffer_init(&buffer_4g, sizeof(uint8_t));
+#endif
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
     utils_buffer_init(&buffer_wifi_ethernet, sizeof(uint8_t));
+#endif
     return NETIF_OK;
 }
 
@@ -124,16 +141,22 @@ netif_status_t netif_core_run(){
     uint8_t data;
     // Process Reponse from Module (4G or Wifi_Ethernet)
     netif_core_process_response();
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
     // Check Input from 4G Module
     if(NETIF_4G_INPUT_IS_AVAILABLE()){
         data = NETIF_4G_INPUT();
         utils_buffer_push(&buffer_4g,&data);
     }
+#endif
+
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
     // Check Input from Wifi/Ethernet Module
     if(NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()){
         data = NETIF_WIFI_ETHERNET_INPUT();
+//        utils_log_info("%c", data);
         utils_buffer_push(&buffer_wifi_ethernet,&data);
     }
+#endif
     return NETIF_OK;
 }
 
@@ -158,21 +181,26 @@ netif_status_t netif_core_deinit(){
  */
 bool netif_core_atcmd_is_responded(netif_module_t module, netif_core_response_t* response){
 	switch (module) {
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 		case NETIF_4G:
 			if(at_response_4g_indication){
 				*response = at_response_4g;
 				return true;
 			}
 			break;
+#endif
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 		case NETIF_WIFI_ETHERNET:
 			if(at_response_wifi_ethernet_indication){
 				*response = at_response_wifi_ethernet;
 				return true;
 			}
 			break;
+#endif
 		default:
 			break;
 	}
+
     return false;
 }
 
@@ -186,6 +214,7 @@ bool netif_core_atcmd_is_responded(netif_module_t module, netif_core_response_t*
  */
 bool netif_core_atcmd_get_data_before(netif_module_t module, uint8_t **data, size_t * data_size){
 	switch (module) {
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 		case NETIF_4G:
 			if(at_response_4g_indication){
 				*data = core_4g_buffer;
@@ -193,12 +222,16 @@ bool netif_core_atcmd_get_data_before(netif_module_t module, uint8_t **data, siz
 				return true;
 			}
 			break;
+#endif
+
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 		case NETIF_WIFI_ETHERNET:
 			if(at_response_wifi_ethernet_indication){
 				*data = core_wifi_ethernet_buffer;
 				*data_size = core_wifi_ethernet_buffer_index;
 				return true;
 			}
+#endif
 		default:
 			break;
 	}
@@ -216,6 +249,7 @@ bool netif_core_atcmd_get_data_before(netif_module_t module, uint8_t **data, siz
  */
 bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data){
 	switch (module) {
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 		case NETIF_4G:
 			if(at_response_4g_indication){
 				if(utils_buffer_is_available(&buffer_4g)){
@@ -224,6 +258,9 @@ bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data){
 				}
 			}
 			break;
+#endif
+
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 		case NETIF_WIFI_ETHERNET:
 			if(at_response_wifi_ethernet_indication){
 				if(utils_buffer_is_available(&buffer_wifi_ethernet)){
@@ -232,9 +269,11 @@ bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data){
 				}
 			}
 			break;
+#endif
 		default:
 			break;
 	}
+
 	return false;
 }
 
@@ -246,6 +285,7 @@ bool netif_core_atcmd_get_data_after(netif_module_t module, uint8_t *data){
  */
 bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
 	switch (module) {
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 		case NETIF_4G:
 			if(reset_buffer){
 				core_4g_buffer_index = 0;
@@ -253,6 +293,9 @@ bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
 			}
 			at_response_4g_indication = false;
 			break;
+#endif
+
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 		case NETIF_WIFI_ETHERNET:
 			if(reset_buffer){
 				core_wifi_ethernet_buffer_index = 0;
@@ -261,11 +304,13 @@ bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
 			at_response_wifi_ethernet_indication = false;
 			break;
 		default:
+#endif
 			break;
 	}
     return true;
 }
 
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 /**
  * @brief Input data from 4G Module to Netif Core
  * 
@@ -291,7 +336,10 @@ bool netif_core_4g_input(uint8_t* data, size_t data_size){
 bool netif_core_4g_output(uint8_t* data, size_t data_size){
     NETIF_4G_OUTPUT(data, data_size);
 }
+#endif
 
+
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 /**
  * @brief Input data from Wifi-Ethernet Device to Netif Core Stack
  * 
@@ -317,7 +365,7 @@ bool netif_core_wifi_ethernet_input(uint8_t* data, size_t data_size){
 bool netif_core_wifi_ethernet_output(uint8_t * data, size_t data_size){
     NETIF_WIFI_ETHERNET_OUTPUT(data, data_size);
 }
-
+#endif
 
 
 

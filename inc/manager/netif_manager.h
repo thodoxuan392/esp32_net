@@ -27,6 +27,13 @@ netif_status_t netif_manager_init();
 netif_status_t netif_manager_run();
 
 /**
+ * @brief Initialize Net Manager
+ *
+ * @return netif_status_t Reset network
+ */
+netif_status_t netif_manager_reset();
+
+/**
  * @brief Deinitialize Net Manager
  * 
  * @return netif_status_t Status of Process

@@ -1,9 +1,11 @@
+
+#include "netif_opts.h"
 #include "manager/netif_ethernet.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_ethernet.h"
-
 #include "utils/utils_logger.h"
 
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
@@ -32,7 +34,7 @@ netif_status_t netif_ethernet_run(){
     uint8_t *data;
     size_t data_size;
     // Check Wifi Event
-    if(netif_core_atcmd_is_responded(NETIF_4G, &at_response)){
+    if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
         switch (at_response)
         {
         case NETIF_WIFI_ETHERNET_REPORT_ETH_CONNECTED:
@@ -46,7 +48,7 @@ netif_status_t netif_ethernet_run(){
         	utils_log_info("Ethernet disconnected\r\n");
             /* code */
             ethernet_connected = false;
-            netif_core_atcmd_reset(NETIF_4G, false);
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
             return NETIF_OK;
             break;
         default:
@@ -198,3 +200,5 @@ netif_status_t netif_ethernet_get_mac(char * mac, size_t mac_max_size){
     }
     return NETIF_IN_PROCESS;
 }
+
+#endif

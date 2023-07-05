@@ -4,6 +4,11 @@
 #include "stdio.h"
 #include "stdbool.h"
 #include "netif_def.h"
+#include "netif_opts.h"
+
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
+
+
 
 #define NETIF_4G_IMEI_SIZE  15
 
@@ -63,5 +68,6 @@ netif_status_t netif_4g_is_connected(bool *connected);
 netif_status_t netif_4g_is_internet_connected(bool *connected);
 
 
+#endif
 
 #endif //NETIF_4G_H

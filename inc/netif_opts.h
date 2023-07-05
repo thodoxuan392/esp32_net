@@ -17,6 +17,13 @@
     #define NETIF_MAX_RETRY         3
 #endif
 
+#define NETIF_4G_ENABLE				0
+#define NETIF_WIFI_ETHERNET_ENABLE	1
+#if (!defined(NETIF_4G_ENABLE) || ( defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 0)) && \
+	(!defined(NETIF_WIFI_ETHERNET_ENABLE) || ( defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 0))
+#error "Please defined NETIF_4G_ENABLE = 1 or NETIF_WIFI_ETHERNET_ENABLE = 1"
+#endif
+
 /***********************************************4G Module*******************************************/
 // Power 4G
 //#define NETIF_4G_POWER(enable)		if(enable) { \
@@ -78,16 +85,16 @@
 #define NETIF_CORE_BUFFER_SIZE          2048
 
 // AT Command Buffer to send AT Command
-#define NETIF_ATCMD_BUFFER_SIZE             1024
-#define NETIF_ATCMD_BUFFER_SIZE_LARGE       2048
+#define NETIF_ATCMD_BUFFER_SIZE             512
+#define NETIF_ATCMD_BUFFER_SIZE_LARGE       1024
 
 // Network Command Timeout
-#define NETIF_ATCMD_TIMEOUT					1000		// 1000ms
+#define NETIF_ATCMD_TIMEOUT					10000		// 10000ms
 
 // Network Apps Retry Interval
 #define NETIF_APPS_RETRY_INTERVAL			200		// 200ms
 
 // Network Retry Interval
-#define NETIF_MANAGER_RETRY_INTERVAL		3000	// 5000ms
+#define NETIF_MANAGER_RETRY_INTERVAL		5000	// 5000ms
 
 #endif //NETIF_OPTS_H

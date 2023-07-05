@@ -5,6 +5,8 @@
 #include "utils/utils_buffer.h"
 #include "utils/utils_logger.h"
 
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
+
 // AT Message Buffer
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
 // Wifi Status
@@ -23,7 +25,7 @@ static char * setting_command[] = {
 // Wifi Ethernet State
 enum {
 	STATE_WIFI_RESET,
-	STATE_WIFI_DISCONNECTED,
+	STATE_WIFI_RECONNECT,
 	STATE_WIFI_WAIT_FOR_CONNECTED,
 	STATE_WIFI_CONNECTED,
 };
@@ -321,23 +323,22 @@ netif_status_t netif_wifi_reset(){
 		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
 			// Reset State
 			step = 0;
+			utils_log_error("Timeout to reset wifi, do not receive any response\r\n");
 			// Return TIMEOUT
 			return NETIF_TIMEOUT;
 
 		}
-		// Wait Reconnect AP Response
-		if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
-			step = 0;
-			// Donot use data from response -> Clean Core Buffer
-			netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
-			// Check AT Response
-			if(at_response == NETIF_RESPONSE_OK){
-				return NETIF_OK;
-			}else{
-				return NETIF_FAIL;
-			}
-		}
-
+        // Wait Disconnect AP Response
+        if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &at_response)){
+            // Donot use data from response -> Clean Core Buffer
+            netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
+            // Check AT Response
+            if(at_response == NETIF_RESPONSE_OK){
+                return NETIF_OK;
+            }else{
+                return NETIF_FAIL;
+            }
+        }
 		break;
 	default:
 		break;
@@ -412,6 +413,7 @@ netif_status_t netif_wifi_start_smartconfig(){
     {
     case 0:
     	last_time_sent = NETIF_GET_TIME_MS();
+    	netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
         // Send Connect to AP to Wifi Module
         size = sprintf(at_message, NETIF_ATCMD_WIFI_START_SMARTCONFIG);
         netif_core_wifi_ethernet_output(at_message, size);
@@ -502,32 +504,37 @@ static netif_status_t netif_wifi_fsm(){
 	static uint8_t retry = 0;
 	static uint32_t last_time_sent = 0;
 	static uint8_t current_command_idx = 0;
+	const uint8_t retry_time = 5;
+	const uint8_t retry_interval = 20000;
 	netif_core_response_t response;
 	netif_status_t ret;
 	int size;
 	switch (step) {
 	case STATE_WIFI_RESET:
-		ret = netif_wifi_reset();
-		if (ret != NETIF_IN_PROCESS){
-			last_time_sent = NETIF_GET_TIME_MS();
-			step = STATE_WIFI_DISCONNECTED;
+		if(NETIF_GET_TIME_MS() - last_time_sent < retry_interval){
+			break;
 		}
-		break;
-	case STATE_WIFI_DISCONNECTED:
-		ret = netif_wifi_reconnect();
-		if (ret != NETIF_IN_PROCESS){
+		ret = netif_wifi_reset();
+		if (ret == NETIF_OK){
 			last_time_sent = NETIF_GET_TIME_MS();
 			step = STATE_WIFI_WAIT_FOR_CONNECTED;
+		} else if (ret != NETIF_IN_PROCESS){
+			last_time_sent = NETIF_GET_TIME_MS();
+			retry ++;
+			if(retry > retry_time){
+				retry = 0;
+				utils_log_error("Cannot reset wifi\r\n");
+				step = STATE_WIFI_WAIT_FOR_CONNECTED;
+			}
 		}
 		break;
 	case STATE_WIFI_WAIT_FOR_CONNECTED:
 		if(NETIF_GET_TIME_MS() - last_time_sent > 20000){
 			last_time_sent = NETIF_GET_TIME_MS();
-			utils_log_debug("Timeout\r\n");
-			// Reset State
-			step = STATE_WIFI_DISCONNECTED;
+			utils_log_debug("Wait for wifi connected timeout, try to reconnect\r\n");
 			break;
 		}
+
 		if(wifi_connected){
 			step = STATE_WIFI_CONNECTED;
 			break;
@@ -535,7 +542,7 @@ static netif_status_t netif_wifi_fsm(){
 		break;
 	case STATE_WIFI_CONNECTED:
 		if(!wifi_connected){
-			step = STATE_WIFI_DISCONNECTED;
+			step = STATE_WIFI_WAIT_FOR_CONNECTED;
 		}
 		break;
 	default:
@@ -543,3 +550,5 @@ static netif_status_t netif_wifi_fsm(){
 	}
 	return NETIF_IN_PROCESS;
 }
+
+#endif

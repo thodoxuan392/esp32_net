@@ -6,8 +6,8 @@
 #include "stdbool.h"
 #include "netif_def.h"
 
-#define NETIF_MQTT_ON_MESSAGE_LEN          2048
-#define NETIF_MQTT_PAYLOAD_LEN          2048
+#define NETIF_MQTT_ON_MESSAGE_LEN       1024
+#define NETIF_MQTT_PAYLOAD_LEN          1024
 #define NETIF_MQTT_TOPIC_LEN            128
 
 typedef struct{

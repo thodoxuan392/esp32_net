@@ -6,6 +6,7 @@
 #include "utils/utils_logger.h"
 
 static netif_manager_mode_t netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
+static uint8_t netif_reset_state;
 
 // Internal Network Manager State
 enum {
@@ -108,7 +109,13 @@ netif_status_t netif_manager_run(){
  * @return netif_status_t Reset network
  */
 netif_status_t netif_manager_reset(){
-	return netif_wifi_reset();
+#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
+	netif_wifi_reset();
+#endif
+#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
+	netif_4g_reset();
+	return NETIF_OK;
+#endif
 }
 
 

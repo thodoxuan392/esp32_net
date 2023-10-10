@@ -28,11 +28,11 @@
 // 4G Stop MQTT Service
 #define NETIF_ATCMD_4G_MQTT_STOP                            "AT+CMQTTSTOP\r\n"
 // 4G Client Configuration (clientid)
-#define NETIF_ATCMD_4G_MQTT_ACCQ                            "AT+CMQTTACCQ=0,\"%s\",0,3\r\n"
+#define NETIF_ATCMD_4G_MQTT_ACCQ                            "AT+CMQTTACCQ=0,\"%s\",0\r\n"
 // 4G Connect to MQTT Broker (server_address, keepalive, clean_session, username, password)
 #define NETIF_ATCMD_4G_MQTT_CONNECT                         "AT+CMQTTCONNECT=0,\"tcp://%s:%d\",%d,%d,\"%s\",\"%s\"\r\n"
 // 4G Disconnect from MQTT Broker
-#define NETIF_ATCMD_4G_MQTT_DISCONNECT                      "AT+CMQTTDISC=0,10000\r\n"  
+#define NETIF_ATCMD_4G_MQTT_DISCONNECT                      "AT+CMQTTDISC=0,120\r\n"
 // 4G Publish Message Topic (topic_len)
 #define NETIF_ATCMD_4G_MQTT_PUBLISH_TOPIC                   "AT+CMQTTTOPIC=0,%d\r\n"    
 // 4G Publish Message Payload (payload_len)

@@ -102,7 +102,7 @@ static void netif_core_process_response(){
 													at_response_table[i])){
 					// Match with index i
 					at_response_4g = (netif_core_response_t)i;
-	//            	utils_log_debug("4G response: %d\r\n", at_response_4g);
+	            	utils_log_debug("%s\r\n", at_response_table[i]);
 					at_response_4g_indication = true;
 					break;
 				}

@@ -1,4 +1,4 @@
-	#include "apps/netif_mqtt.h"
+#include "apps/netif_mqtt.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_mqtt.h"
 #include "manager/netif_manager.h"
@@ -848,6 +848,7 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Client Config to AP to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_START);
+				utils_log_debug(at_message);
 				netif_core_4g_output(at_message, size);
 				state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 			}
@@ -860,19 +861,33 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 				// Send Client Config to AP to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_ACCQ,
 														client->client_id);
+				utils_log_debug(at_message);
 				netif_core_4g_output(at_message, size);
 				state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				if(retry >= NETIF_MAX_RETRY){
+					netif_core_atcmd_reset(NETIF_4G ,false);
+					retry = 0;
+					started_flag = 0;
+					state = STATE_4G_MQTT_START;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				started_flag = 0;
+				state = STATE_4G_MQTT_START;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
 				if(response == NETIF_RESPONSE_OK ){
 					netif_core_atcmd_reset(NETIF_4G ,true);
-					retry = 0;
 					if(!started_flag){
 						started_flag = 1;
 						state = STATE_4G_MQTT_CONFIG;
 					}else{
+						started_flag = 0;
+						retry = 0;
 						state = STATE_4G_MQTT_START;
 						return NETIF_OK;
 					}
@@ -881,10 +896,12 @@ static netif_status_t netif_4g_mqtt_config(netif_mqtt_client_t * client){
 					if(retry >= NETIF_MAX_RETRY){
 						netif_core_atcmd_reset(NETIF_4G ,false);
 						retry = 0;
+						started_flag = 0;
 						state = STATE_4G_MQTT_START;
 						return NETIF_FAIL;
 					}
 					retry ++;
+					started_flag = 0;
 					state = STATE_4G_MQTT_START;
 				}
 			}
@@ -927,11 +944,22 @@ static netif_status_t netif_4g_mqtt_connect(netif_mqtt_client_t * client){
 																	client->clean_session,
 																	client->username,
 																	client->password);
+				utils_log_debug(at_message);
 				netif_core_4g_output(at_message, size);
 				state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G ,false);
+				if(retry >= NETIF_MAX_RETRY){
+					retry = 0;
+					state = STATE_4G_MQTT_CONNECT;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				state = STATE_4G_MQTT_CONNECT;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					netif_core_atcmd_reset(NETIF_4G ,true);
@@ -985,6 +1013,16 @@ static netif_status_t netif_4g_mqtt_disconnect(netif_mqtt_client_t * client){
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G ,false);
+				if(retry >= NETIF_MAX_RETRY){
+					retry = 0;
+					state = STATE_4G_MQTT_DISCONNECT;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				state = STATE_4G_MQTT_DISCONNECT;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					netif_core_atcmd_reset(NETIF_4G ,true);
@@ -1066,6 +1104,16 @@ static netif_status_t netif_4g_mqtt_subcribe(netif_mqtt_client_t * client, char 
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G ,true);
+				if(retry >= NETIF_MAX_RETRY){
+					retry = 0;
+					state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				state = STATE_4G_MQTT_SUBCRIBE_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					netif_core_atcmd_reset(NETIF_4G ,true);
@@ -1146,6 +1194,16 @@ static netif_status_t netif_4g_mqtt_unsubcribe(netif_mqtt_client_t * client, cha
 			}
 			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G,false);
+				if(retry >= NETIF_MAX_RETRY){
+					retry = 0;
+					state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
+					return NETIF_FAIL;
+				}
+				retry ++;
+				state = STATE_4G_MQTT_UNSUBCRIBE_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					netif_core_atcmd_reset(NETIF_4G,false);
@@ -1210,14 +1268,29 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_TOPIC_INPUT:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G ,true);
+				if(retry >= NETIF_MAX_RETRY){
+					utils_log_error("MQTT publish topic input response timeout, maximum retried time\r\n");
+					// Reset Buffer and Indication if Try number over
+					retry = 0;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+					return NETIF_FAIL;
+				}
+				utils_log_warn("MQTT publish topic input response failed, retrying ...\r\n");
+				retry ++;
+				state = STATE_4G_MQTT_PUBLISH_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G ,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
 					netif_core_atcmd_reset(NETIF_4G ,true);
+					last_time_sent = NETIF_GET_TIME_MS();
 					netif_core_4g_output(topic, strlen(topic));
 					retry = 0;
 					state = STATE_4G_MQTT_PUBLISH_PAYLOAD;
 				}
 				else if(response == NETIF_RESPONSE_ERROR){
+					utils_log_error("MQTT publish topic input got error, maximum retried time\r\n");
 					netif_core_atcmd_reset(NETIF_4G ,true);
 					if(retry >= NETIF_MAX_RETRY){
 						// Reset Buffer and Indication if Try number over
@@ -1225,15 +1298,30 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
 					}
+					utils_log_error("MQTT publish topic input got error, retrying ...\r\n");
 					retry ++;
 					state = STATE_4G_MQTT_PUBLISH_TOPIC;
 				}
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_PAYLOAD:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G ,true);
+				if(retry >= NETIF_MAX_RETRY){
+					utils_log_error("MQTT publish payload timeout, maximum retried time\r\n");
+					// Reset Buffer and Indication if Try number over
+					retry = 0;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+					return NETIF_FAIL;
+				}
+				utils_log_warn("MQTT publish payload timeout, retrying ...\r\n");
+				retry ++;
+				state = STATE_4G_MQTT_PUBLISH_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					netif_core_atcmd_reset( NETIF_4G , true);
+					last_time_sent = NETIF_GET_TIME_MS();
 					// Send Publish Payload Len to 4G Module
 					size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH_PAYLOAD,
 															strlen(payload));
@@ -1245,20 +1333,35 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 				else if(response == NETIF_RESPONSE_ERROR){
 					netif_core_atcmd_reset(NETIF_4G ,true);
 					if(retry >= NETIF_MAX_RETRY){
+						utils_log_error("MQTT publish payload got error, maximum retried time\r\n");
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
 					}
+					utils_log_error("MQTT publish payload got error, retrying ...\r\n");
 					retry ++;
 					state = STATE_4G_MQTT_PUBLISH_TOPIC;
 				}
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH_PAYLOAD_INPUT:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G,true);
+				if(retry >= NETIF_MAX_RETRY){
+					utils_log_error("MQTT publish payload input timeout, maximum retried time\r\n");
+					retry = 0;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+					return NETIF_FAIL;
+				}
+				utils_log_warn("MQTT publish payload input timeout, retrying ...\r\n");
+				retry ++;
+				state = STATE_4G_MQTT_PUBLISH_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_INPUT){
 					// Transmit Payload
 					netif_core_atcmd_reset(NETIF_4G ,true);
+					last_time_sent = NETIF_GET_TIME_MS();
 					netif_core_4g_output(payload, strlen(payload));
 					retry = 0;
 					// Switch to Publish Message
@@ -1267,43 +1370,72 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 				else if(response == NETIF_RESPONSE_ERROR){
 					netif_core_atcmd_reset(NETIF_4G,true);
 					if(retry >= NETIF_MAX_RETRY){
+						utils_log_error("MQTT publish payload input got error, maximum retried time\r\n");
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
 					}
+					utils_log_warn("MQTT publish payload input got error, retrying ...\r\n");
 					retry ++;
 					state = STATE_4G_MQTT_PUBLISH_TOPIC;
 				}
 			}
 			break;
 		case STATE_4G_MQTT_PUBLISH:
-				if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
-					if(response == NETIF_RESPONSE_OK){
-						netif_core_atcmd_reset(NETIF_4G,true);
-						// Publish Message
-						size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH,
-																qos,
-																120,	// timeout
-																retain,	// retain
-																0);		//dup
-						netif_core_4g_output(at_message, size);
-						retry = 0;
-						// Switch to wait for transmiting payload
-						state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
-					}
-					else if(response == NETIF_RESPONSE_ERROR){
-						netif_core_atcmd_reset(NETIF_4G,true);
-						if(retry >= NETIF_MAX_RETRY){
-							retry = 0;
-							state = STATE_4G_MQTT_PUBLISH_TOPIC;
-							return NETIF_FAIL;
-						}
-						retry ++;
-						state = STATE_4G_MQTT_PUBLISH_TOPIC;
-					}
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G,true);
+				if(retry >= NETIF_MAX_RETRY){
+					utils_log_error("MQTT publish timeout, maximum retried time\r\n");
+					retry = 0;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+					return NETIF_FAIL;
 				}
-				break;
+				utils_log_warn("MQTT publish timeout, retrying ...\r\n");
+				retry ++;
+				state = STATE_4G_MQTT_PUBLISH_TOPIC;
+			}
+			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
+				if(response == NETIF_RESPONSE_OK){
+					netif_core_atcmd_reset(NETIF_4G,true);
+					last_time_sent = NETIF_GET_TIME_MS();
+					// Publish Message
+					size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_PUBLISH,
+															qos,
+															120,	// timeout
+															retain,	// retain
+															0);		//dup
+					netif_core_4g_output(at_message, size);
+					retry = 0;
+					// Switch to wait for transmiting payload
+					state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;
+				}
+				else if(response == NETIF_RESPONSE_ERROR){
+					netif_core_atcmd_reset(NETIF_4G,true);
+					if(retry >= NETIF_MAX_RETRY){
+						utils_log_error("MQTT publish got error, maximum retried time\r\n");
+						retry = 0;
+						state = STATE_4G_MQTT_PUBLISH_TOPIC;
+						return NETIF_FAIL;
+					}
+					utils_log_warn("MQTT publish got error, retrying ...\r\n");
+					retry ++;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+				}
+			}
+			break;
 		case STATE_4G_MQTT_WAIT_FOR_RESPONSE:
+			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
+				netif_core_atcmd_reset(NETIF_4G,true);
+				if(retry >= NETIF_MAX_RETRY){
+					utils_log_error("MQTT wait for response timeout, maximum retried time\r\n");
+					retry = 0;
+					state = STATE_4G_MQTT_PUBLISH_TOPIC;
+					return NETIF_FAIL;
+				}
+				utils_log_warn("MQTT wait for response timeout, retrying ...\r\n");
+				retry ++;
+				state = STATE_4G_MQTT_PUBLISH_TOPIC;
+			}
 			if(netif_core_atcmd_is_responded(NETIF_4G,&response)){
 				if(response == NETIF_RESPONSE_OK){
 					// Reset Buffer
@@ -1315,10 +1447,12 @@ static netif_status_t netif_4g_mqtt_publish(netif_mqtt_client_t * client, char *
 				else if(response == NETIF_RESPONSE_ERROR){
 					netif_core_atcmd_reset(NETIF_4G,true);
 					if(retry >= NETIF_MAX_RETRY){
+						utils_log_error("MQTT wait for response got error, maximum retried time\r\n");
 						retry = 0;
 						state = STATE_4G_MQTT_PUBLISH_TOPIC;
 						return NETIF_FAIL;
 					}
+					utils_log_warn("MQTT wait for response got error, retrying ...\r\n");
 					retry ++;
 					state = STATE_4G_MQTT_PUBLISH_TOPIC;
 				}
@@ -1429,7 +1563,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 				// Check Pattern is match or not
 				if(utils_string_is_receive_data(on_message_buffer, on_message_buffer_index, payload_pattern)){
 					// Get Topic
-					topic_len = on_message_buffer_index - 2;
+					topic_len = on_message_buffer_index - 2 - strlen(payload_pattern);
 					memcpy(topic, on_message_buffer, topic_len);
 					on_message_buffer_index = 0;
 					state = 3;
@@ -1450,7 +1584,7 @@ static bool netif_4g_mqtt_parse_on_message(){
 				// Check Pattern is match or not
 				if(utils_string_is_receive_data(on_message_buffer, on_message_buffer_index, end_pattern)){
 					// Get Payload
-					payload_len = on_message_buffer_index - 2;
+					payload_len = on_message_buffer_index - 2 - strlen(end_pattern);
 					memcpy(payload, on_message_buffer, payload_len);
 					on_message_buffer_index = 0;
 					state = 0;

@@ -4,6 +4,7 @@
 // Include Entry Header in STM32
 #include "main.h"
 #include "Hal/uart.h"
+#include "Device/sim7070_io.h"
 
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
@@ -28,19 +29,11 @@
 //#define SIMCOM7600
 #define SIMCOM7670
 // Power 4G
-//#define NETIF_4G_POWER(enable)		if(enable) { \
-//											Power_Signal_High(); \
-//									}else { \
-//											Power_Signal_Low(); \
-//									}
+#define NETIF_4G_POWER(enable)		SIM7070_power(enable)
 #ifndef NETIF_4G_POWER(enable)
     #define NETIF_4G_POWER(enable)             (void)(enable)
 #endif
-//#define NETIF_4G_RESET(enable)		if(enable) { \
-//											Reset_Signal_High(); \
-//									}else { \
-//											Reset_Signal_Low(); \
-//									}
+#define NETIF_4G_RESET(enable)		SIM7070_reset(enable)
 #ifndef NETIF_4G_RESET(enable)
     #define NETIF_4G_RESET(enable)             (void)(enable)
 #endif

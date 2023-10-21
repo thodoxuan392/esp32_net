@@ -30,6 +30,7 @@ static const char * at_response_table[] = {
     [NETIF_WIFI_ETHERNET_REPORT_MQTT_PUB_FAIL] = "+MQTTPUB:FAIL",
 #endif
 #if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
+	[NETIF_4G_REPORT_SMS_DONE] = "SMS DONE",
     [NETIF_4G_REPORT_INITIALIZE_DONE] = "PB DONE",
     [NETIF_4G_REPORT_MQTT_CONNECTED] = "+CMQTTCONNECT: 0,0",        // client index is 0, err is 0
     [NETIF_4G_REPORT_MQTT_DISCONNECTED] = "+CMQTTCONNLOST: 0",

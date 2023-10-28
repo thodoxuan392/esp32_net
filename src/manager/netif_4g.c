@@ -90,7 +90,9 @@ netif_status_t netif_4g_run(){
 		ret = netif_4g_startup();
 		if(ret == NETIF_OK){
 			main_state = STATE_4G_SETTING;
+			utils_log_info("4G startup OK\r\n");
 		}else if(ret != NETIF_IN_PROCESS){
+			utils_log_info("4G startup Failed\r\n");
 			return ret;
 		}
 		break;
@@ -98,8 +100,10 @@ netif_status_t netif_4g_run(){
 		ret = netif_4g_setting();
 		if(ret == NETIF_OK){
 			main_state = STATE_4G_IDLE;
+			utils_log_info("4G setting OK\r\n");
 			return NETIF_OK;
 		}else if(ret != NETIF_IN_PROCESS){
+			utils_log_info("4G setting Failed\r\n");
 			main_state = STATE_4G_STARTUP;
 			return ret;
 		}
@@ -208,7 +212,7 @@ static netif_status_t netif_4g_startup(){
 		}
 		// Check Response
 		if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
-			if(response == NETIF_4G_REPORT_INITIALIZE_DONE || response == NETIF_4G_REPORT_SMS_DONE){
+			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
 				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
 				netif_core_atcmd_reset(NETIF_4G, true);
 				startup_state = STATE_4G_STARTUP_RESET_ENA;
@@ -238,7 +242,7 @@ static netif_status_t netif_4g_startup(){
 		}
 		// Check Response
 		if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
-			if(response == NETIF_4G_REPORT_INITIALIZE_DONE || response == NETIF_4G_REPORT_SMS_DONE){
+			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
 				utils_log_info("STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET Ok\r\n");
 				netif_core_atcmd_reset(NETIF_4G, true);
 				startup_state = STATE_4G_STARTUP_RESET_ENA;
@@ -307,6 +311,8 @@ static netif_status_t netif_4g_setting(){
 				}
 				setting_retry ++;
 				setting_state = STATE_4G_SETTING_SEND_COMMAND;
+			}else {
+				netif_core_atcmd_reset(NETIF_4G, false);
 			}
 		}
 		break;

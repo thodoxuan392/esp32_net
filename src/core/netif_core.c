@@ -80,7 +80,7 @@ static void netif_core_process_response(){
 													at_response_table[i])){
 					// Match with index i
 					at_response_wifi_ethernet = (netif_core_response_t)i;
-	//                utils_log_debug("Wifi-Ethernet response: %d\r\n", at_response_wifi_ethernet);
+	            	utils_log_debug("%s\r\n", at_response_table[i]);
 					at_response_wifi_ethernet_indication = true;
 					break;
 				}
@@ -364,6 +364,7 @@ bool netif_core_wifi_ethernet_input(uint8_t* data, size_t data_size){
  * @return false If Failed or Timeout
  */
 bool netif_core_wifi_ethernet_output(uint8_t * data, size_t data_size){
+    utils_log_debug("%.*s", data_size, (char*)data);
     NETIF_WIFI_ETHERNET_OUTPUT(data, data_size);
 }
 #endif

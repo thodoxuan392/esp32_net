@@ -1494,6 +1494,7 @@ static bool netif_wifi_ethernet_mqtt_parse_on_message(){
 		case 1:
 			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == ','){
+					payload_length_index = 0;
 					state = 2;
 				}else if(data != '"' ){
 					topic[topic_len++] = data;
@@ -1503,18 +1504,22 @@ static bool netif_wifi_ethernet_mqtt_parse_on_message(){
 		case 2:
 			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
 				if(data == ','){
+					payload_len = utils_string_to_int(payload_length_buffer, payload_length_index);
+					payload_length_index = 0;
 					state = 3;
+				}else {
+					payload_length_buffer[payload_length_index++] = data;
 				}
 			}
 			break;
 		case 3:
 			if(netif_core_atcmd_get_data_after(NETIF_WIFI_ETHERNET, &data)){
-				if(data == '\n'){
+				if(payload_length_index == payload_len){
 					netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, false);
 					state = 0;
 					return true;
 				}else{
-					payload[payload_len++] = data;
+					payload[payload_length_index++] = data;
 				}
 			}
 			break;

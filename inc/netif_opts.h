@@ -5,6 +5,7 @@
 #include "main.h"
 #include "Hal/uart.h"
 #include "Device/sim7070_io.h"
+#include "Device/wifi_io.h"
 
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
@@ -60,6 +61,10 @@
 
 
 /***********************************************Wifi-LAN Module*******************************************/
+#define NETIF_WIFI_ETHERNET_RESET(enable)                         WIFIIO_reset(enable)
+#define NETIF_WIFI_ETHERNET_RESET_DURATION                        500	// miliseconds
+#define NETIF_WIFI_ETHERNET_RESET_TIMEOUT                        10000	// miliseconds
+
 // Port WIFI-ETHERNET INOUT to UART
 #define NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()            UART_receive_available(UART_1)
 #ifndef NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()    

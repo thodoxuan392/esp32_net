@@ -9,6 +9,7 @@
 
 // Wifi Ethernet State
 enum {
+	STATE_WIFI_WAIT_FOR_DELAY,
 	STATE_WIFI_HARDWARE_RESET_ENABLE,
 	STATE_WIFI_HARDWARE_RESET_DISABLE,
 	STATE_WIFI_WAIT_FOR_HARDWARE_RESET,
@@ -25,7 +26,7 @@ static char at_message[NETIF_ATCMD_BUFFER_SIZE];
 // Wifi Status
 static bool wifi_connected = false;
 static bool smartconfig_done = false;
-static uint8_t fsm_state = STATE_WIFI_HARDWARE_RESET_ENABLE;
+static uint8_t fsm_state = STATE_WIFI_WAIT_FOR_DELAY;
 static uint8_t fsm_retry = 0;
 
 /************************************ Internal Functions********************************/
@@ -309,7 +310,7 @@ netif_status_t netif_wifi_is_connected(bool * connected){
  * @return false If failed or timeout
  */
 netif_status_t netif_wifi_reset(){
-	fsm_state = STATE_WIFI_HARDWARE_RESET_ENABLE;
+	fsm_state = STATE_WIFI_WAIT_FOR_DELAY;
 	fsm_retry = 0;
 	wifi_connected = false;
 	smartconfig_done = false;
@@ -472,20 +473,26 @@ static netif_status_t netif_wifi_fsm(){
 	netif_core_response_t at_response;
 	size_t size;
 	switch (fsm_state) {
+	case STATE_WIFI_WAIT_FOR_DELAY:
+		last_time_sent = NETIF_GET_TIME_MS();
+		fsm_state = STATE_WIFI_HARDWARE_RESET_ENABLE;
+		break;
 	case STATE_WIFI_HARDWARE_RESET_ENABLE:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_WIFI_ETHERNET_RESET_DELAY){
 			last_time_sent = NETIF_GET_TIME_MS();
 			// Send Connect to AP to Wifi Module
 			NETIF_WIFI_ETHERNET_RESET(true);
 			// Switch wait to Wait Disconnect AP Response
 			fsm_state = STATE_WIFI_HARDWARE_RESET_DISABLE;
-			break;
+		}
+		break;
 	case STATE_WIFI_HARDWARE_RESET_DISABLE:
-			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_WIFI_ETHERNET_RESET_DURATION){
-				last_time_sent = NETIF_GET_TIME_MS();
-				NETIF_WIFI_ETHERNET_RESET(false);
-				fsm_state = STATE_WIFI_WAIT_FOR_HARDWARE_RESET;
-			}
-			break;
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_WIFI_ETHERNET_RESET_DURATION){
+			last_time_sent = NETIF_GET_TIME_MS();
+			NETIF_WIFI_ETHERNET_RESET(false);
+			fsm_state = STATE_WIFI_WAIT_FOR_HARDWARE_RESET;
+		}
+		break;
 	case STATE_WIFI_WAIT_FOR_HARDWARE_RESET:
 		if(NETIF_GET_TIME_MS() - last_time_sent > 20000){
 			last_time_sent = NETIF_GET_TIME_MS();

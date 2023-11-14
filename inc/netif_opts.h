@@ -63,7 +63,7 @@
 /***********************************************Wifi-LAN Module*******************************************/
 #define NETIF_WIFI_ETHERNET_RESET(enable)                         WIFIIO_reset(enable)
 #define NETIF_WIFI_ETHERNET_RESET_DELAY                        	  10000	// miliseconds
-#define NETIF_WIFI_ETHERNET_RESET_DURATION                        500	// miliseconds
+#define NETIF_WIFI_ETHERNET_RESET_DURATION                        2000	// miliseconds
 #define NETIF_WIFI_ETHERNET_RESET_TIMEOUT                        10000	// miliseconds
 
 // Port WIFI-ETHERNET INOUT to UART

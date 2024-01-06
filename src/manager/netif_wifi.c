@@ -9,8 +9,12 @@
 
 // Wifi Ethernet State
 enum {
-	STATE_WIFI_RESET,
-	STATE_WIFI_WAIT_FOR_RESET,
+	STATE_WIFI_WAIT_FOR_DELAY,
+	STATE_WIFI_HARDWARE_RESET_ENABLE,
+	STATE_WIFI_HARDWARE_RESET_DISABLE,
+	STATE_WIFI_WAIT_FOR_HARDWARE_RESET,
+	STATE_WIFI_SOFTWARE_RESET,
+	STATE_WIFI_WAIT_FOR_SOFTWARE_RESET,
 	STATE_WIFI_RECONNECT,
 	STATE_WIFI_WAIT_FOR_CONNECTED,
 	STATE_WIFI_CONNECTED,
@@ -22,7 +26,7 @@ static char at_message[NETIF_ATCMD_BUFFER_SIZE];
 // Wifi Status
 static bool wifi_connected = false;
 static bool smartconfig_done = false;
-static uint8_t fsm_state = STATE_WIFI_RESET;
+static uint8_t fsm_state = STATE_WIFI_WAIT_FOR_DELAY;
 static uint8_t fsm_retry = 0;
 
 /************************************ Internal Functions********************************/
@@ -306,7 +310,7 @@ netif_status_t netif_wifi_is_connected(bool * connected){
  * @return false If failed or timeout
  */
 netif_status_t netif_wifi_reset(){
-	fsm_state = STATE_WIFI_RESET;
+	fsm_state = STATE_WIFI_WAIT_FOR_DELAY;
 	fsm_retry = 0;
 	wifi_connected = false;
 	smartconfig_done = false;
@@ -469,20 +473,50 @@ static netif_status_t netif_wifi_fsm(){
 	netif_core_response_t at_response;
 	size_t size;
 	switch (fsm_state) {
-	case STATE_WIFI_RESET:
+	case STATE_WIFI_WAIT_FOR_DELAY:
+		last_time_sent = NETIF_GET_TIME_MS();
+		fsm_state = STATE_WIFI_HARDWARE_RESET_ENABLE;
+		break;
+	case STATE_WIFI_HARDWARE_RESET_ENABLE:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_WIFI_ETHERNET_RESET_DELAY){
+			last_time_sent = NETIF_GET_TIME_MS();
+			// Send Connect to AP to Wifi Module
+			NETIF_WIFI_ETHERNET_RESET(true);
+			// Switch wait to Wait Disconnect AP Response
+			fsm_state = STATE_WIFI_HARDWARE_RESET_DISABLE;
+		}
+		break;
+	case STATE_WIFI_HARDWARE_RESET_DISABLE:
+		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_WIFI_ETHERNET_RESET_DURATION){
+			last_time_sent = NETIF_GET_TIME_MS();
+			NETIF_WIFI_ETHERNET_RESET(false);
+			fsm_state = STATE_WIFI_WAIT_FOR_HARDWARE_RESET;
+		}
+		break;
+	case STATE_WIFI_WAIT_FOR_HARDWARE_RESET:
+		if(NETIF_GET_TIME_MS() - last_time_sent > 20000){
+			last_time_sent = NETIF_GET_TIME_MS();
+			utils_log_debug("Wait for wifi connected timeout after hardware reset, try to software reset\r\n");
+			fsm_state = STATE_WIFI_SOFTWARE_RESET;
+		}
+		if(wifi_connected){
+			fsm_state = STATE_WIFI_CONNECTED;
+		}
+		break;
+	case STATE_WIFI_SOFTWARE_RESET:
 		last_time_sent = NETIF_GET_TIME_MS();
 		// Send Connect to AP to Wifi Module
 		size = sprintf(at_message, NETIF_ATCMD_WIFI_RESET);
 		netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
 		netif_core_wifi_ethernet_output(at_message, size);
 		// Switch wait to Wait Disconnect AP Response
-		fsm_state = STATE_WIFI_WAIT_FOR_RESET;
+		fsm_state = STATE_WIFI_WAIT_FOR_SOFTWARE_RESET;
 		break;
-	case STATE_WIFI_WAIT_FOR_RESET:
+	case STATE_WIFI_WAIT_FOR_SOFTWARE_RESET:
 		// Check Timeout
 		if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT){
 			// Reset State
-			fsm_state = STATE_WIFI_RESET;
+			fsm_state = STATE_WIFI_HARDWARE_RESET_ENABLE;
 			utils_log_error("Timeout to reset wifi, do not receive any response\r\n");
 			// Return TIMEOUT
 			return NETIF_TIMEOUT;

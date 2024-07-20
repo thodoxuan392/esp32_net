@@ -5,7 +5,6 @@
 #include "main.h"
 #include "Hal/uart.h"
 #include "Device/sim7070_io.h"
-#include "Device/wifi_io.h"
 
 // Get Tick (Milisecond)
 #define NETIF_GET_TIME_MS()     HAL_GetTick()
@@ -20,7 +19,7 @@
 #endif
 
 #define NETIF_4G_ENABLE				1
-#define NETIF_WIFI_ETHERNET_ENABLE	1
+#define NETIF_WIFI_ETHERNET_ENABLE	0
 #if (!defined(NETIF_4G_ENABLE) || ( defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 0)) && \
 	(!defined(NETIF_WIFI_ETHERNET_ENABLE) || ( defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 0))
 #error "Please defined NETIF_4G_ENABLE = 1 or NETIF_WIFI_ETHERNET_ENABLE = 1"
@@ -28,7 +27,8 @@
 
 /***********************************************4G Module*******************************************/
 //#define SIMCOM7600
-#define SIMCOM7670
+//#define SIMCOM7670
+#define SIMCOM7680C
 // Power 4G
 #define NETIF_4G_POWER(enable)		SIM7070_power(enable)
 #ifndef NETIF_4G_POWER(enable)

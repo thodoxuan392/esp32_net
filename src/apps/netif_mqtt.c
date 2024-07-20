@@ -937,13 +937,22 @@ static netif_status_t netif_4g_mqtt_connect(netif_mqtt_client_t * client){
 				// Clear Before Data
 				netif_core_atcmd_reset(NETIF_4G ,true);
 				// Send Connect Command to 4G Module
-				size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_CONNECT,
-																	client->host,
-																	client->port,
-																	client->keep_alive,
-																	client->clean_session,
-																	client->username,
-																	client->password);
+				if(strlen(client->username) != 0){
+					size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_CONNECT,
+													client->host,
+													client->port,
+													client->keep_alive,
+													client->clean_session,
+													client->username,
+													client->password);
+				}else{
+					size = sprintf(at_message, NETIF_ATCMD_4G_MQTT_CONNECT_NO_AUTH,
+													client->host,
+													client->port,
+													client->keep_alive,
+													client->clean_session);
+				}
+
 				utils_log_debug(at_message);
 				netif_core_4g_output(at_message, size);
 				state = STATE_4G_MQTT_WAIT_FOR_RESPONSE;

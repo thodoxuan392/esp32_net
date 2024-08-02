@@ -212,8 +212,11 @@ static netif_status_t netif_4g_startup(){
 		}
 		// Check Response
 		if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
+#ifdef SIMCOM7680C
+			if(response == NETIF_4G_REPORT_SMS_DONE){
+#else
 			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
-				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
+#endif				utils_log_debug("NETIF_4G_REPORT_INITIALIZE_DONE\r\n");
 				netif_core_atcmd_reset(NETIF_4G, true);
 				startup_state = STATE_4G_STARTUP_RESET_ENA;
 				return NETIF_OK;
@@ -242,7 +245,11 @@ static netif_status_t netif_4g_startup(){
 		}
 		// Check Response
 		if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
+#ifdef SIMCOM7680C
+			if(response == NETIF_4G_REPORT_SMS_DONE){
+#else
 			if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
+#endif
 				utils_log_info("STATE_4G_STARTUP_WAIT_FOR_SOFTWARE_RESET Ok\r\n");
 				netif_core_atcmd_reset(NETIF_4G, true);
 				startup_state = STATE_4G_STARTUP_RESET_ENA;

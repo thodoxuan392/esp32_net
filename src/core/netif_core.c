@@ -95,6 +95,7 @@ static void netif_core_process_response(){
 			volatile uint8_t * data_p = &core_4g_buffer[core_4g_buffer_index];
 			core_4g_buffer_index = (core_4g_buffer_index+1) % BUFFER_MAX_SIZE;
 			utils_buffer_pop(&buffer_4g,data_p);
+        	utils_log_raw("%c", *data_p);
 			// Check Response buffer match with any in at reponse table
 			for (size_t i = 0; i < at_response_table_size; i++)
 			{

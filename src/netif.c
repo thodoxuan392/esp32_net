@@ -3,7 +3,7 @@
 #include "apps/netif_mqtt.h"
 #include "manager/netif_manager.h"
 #include "core/netif_core.h"
-#include "utils/utils_logger.h"
+#include "utils_logger.h"
 
 /**
  * @brief Init Network Interface

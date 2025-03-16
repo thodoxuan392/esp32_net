@@ -2,8 +2,8 @@
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_wifi.h"
 #include "netif_opts.h"
-#include "utils/utils_buffer.h"
-#include "utils/utils_logger.h"
+#include "utils_buffer.h"
+#include "utils_logger.h"
 
 #if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 

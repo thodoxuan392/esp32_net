@@ -3,7 +3,7 @@
 #include "manager/netif_ethernet.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_ethernet.h"
-#include "utils/utils_logger.h"
+#include "utils_logger.h"
 
 #if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 

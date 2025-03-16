@@ -2,8 +2,8 @@
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_http.h"
 #include "netif_opts.h"
-#include "utils/utils_buffer.h"
-#include "utils/utils_logger.h"
+#include "utils_buffer.h"
+#include "utils_logger.h"
 
 
 // AT Message Buffer

@@ -1,7 +1,7 @@
 #include "manager/netif_4g.h"
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_4g.h"
-#include "utils/utils_logger.h"
+#include "utils_logger.h"
 
 #if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 

@@ -15,7 +15,7 @@
 // Socket configuration 
 #define NETIF_ATCMD_4G_SOCKET_CONFIG    "AT+CGSOCKCONT=1,\"IP\",\"cmet\"\r\n"
 // Disable TCP/IP Mode  
-#define NETIF_ATCMD_4G_DISABLE_TCP_MODE "AT+CIPMODE=0\r\n"
+#define NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE "AT+CIPMODE=0\r\n"
 // Disable TCP/IP Mode
 #define NETIF_ATCMD_4G_NETOPEN 	"AT+NETOPEN\r\n"
 // Get IMEI Address

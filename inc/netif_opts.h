@@ -26,6 +26,10 @@
 	#error "Please defined NETIF_4G_ENABLE = 1 or NETIF_WIFI_ETHERNET_ENABLE = 1"
 #endif
 
+#define NETIF_USE_HTTP  0
+#define NETIF_USE_MQTT	0
+#define NETIF_USE_TCP 	1
+
 /***********************************************4G
  * Module*******************************************/
 #define SIMCOM7600

@@ -19,7 +19,7 @@
 #endif
 
 #define NETIF_4G_ENABLE 1
-#define NETIF_WIFI_ETHERNET_ENABLE 1
+#define NETIF_WIFI_ETHERNET_ENABLE 0
 #if(!defined(NETIF_4G_ENABLE) || (defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 0)) && \
 	(!defined(NETIF_WIFI_ETHERNET_ENABLE) ||                                            \
 	 (defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 0))

@@ -8,6 +8,8 @@
 #define NETIF_ATCMD_4G_RESET		"AT+CRESET\r\n"
 // Enable Echo 
 #define NETIF_ATCMD_4G_ECHO_ENABLE     "ATE1\r\n"
+// Enable Echo 
+#define NETIF_ATCMD_4G_ECHO_DISABLE     "ATE0\r\n"
 // Check Network Registration
 #define NETIF_ATCMD_4G_NETWORK_REGIS     "AT+CREG\r\n"
 // Define the PDP Context 
@@ -20,6 +22,8 @@
 #define NETIF_ATCMD_4G_NETOPEN 	"AT+NETOPEN\r\n"
 // Get IMEI Address
 #define NETIF_ATCMD_4G_GET_IMEI         "AT+SIMEI?\r\n"
+// Set Rx polling Mode
+#define NETIF_TCP_RX_POLLING_MODE   "AT+CIPRXGET=1\r\n"
 
 
 

@@ -34,10 +34,11 @@ enum {
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
 // Setting Command
 static char * setting_command[] = {
-    NETIF_ATCMD_4G_ECHO_ENABLE,
+    NETIF_ATCMD_4G_ECHO_DISABLE,
     NETIF_ATCMD_4G_PDP_CONTEXT,
     NETIF_ATCMD_4G_SOCKET_CONFIG,
     NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE,
+	NETIF_TCP_RX_POLLING_MODE,
 };
 
 

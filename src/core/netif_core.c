@@ -4,10 +4,7 @@
 #include "utils_logger.h"
 #include "utils_string.h"
 
-static const char * at_response_table[] = {
-    [NETIF_RESPONSE_OK] = "OK",
-    [NETIF_RESPONSE_ERROR] = "ERROR",
-    [NETIF_RESPONSE_INPUT] = ">",
+static const char * at_response_table[NETIF_RESPONSE_MAX] = {
 #if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
     [NETIF_WIFI_ETHERNET_RESPONSE_SEND_OK] = "SEND OK",
     [NETIF_WIFI_ETHERNET_RESPONSE_SEND_FAIL] = "SEND FAIL",
@@ -45,8 +42,11 @@ static const char * at_response_table[] = {
     [NETIF_4G_REPORT_TCP_CIP_CLOSE] = "+CIPCLOSE:",
     [NETIF_4G_REPORT_TCP_CIP_SEND] = "+CIPSEND:",
     [NETIF_4G_REPORT_TCP_CIP_RX_GET] = "+CIPRXGET:",
+	[NETIF_4G_REPORT_TCP_CIP_RX_ERROR] = "+IP ERROR",
 #endif
-
+    [NETIF_RESPONSE_OK] = "OK",
+    [NETIF_RESPONSE_ERROR] = "ERROR",
+    [NETIF_RESPONSE_INPUT] = ">",
 };
 static uint16_t at_response_table_size = sizeof(at_response_table)/sizeof(at_response_table[0]);
 
@@ -155,6 +155,7 @@ netif_status_t netif_core_run(){
     // Check Input from 4G Module
     if(NETIF_4G_INPUT_IS_AVAILABLE()){
         data = NETIF_4G_INPUT();
+		utils_log_raw("%c", data);
         utils_buffer_push(&buffer_4g,&data);
     }
 #endif
@@ -163,7 +164,7 @@ netif_status_t netif_core_run(){
     // Check Input from Wifi/Ethernet Module
     if(NETIF_WIFI_ETHERNET_INPUT_IS_AVAILABLE()){
         data = NETIF_WIFI_ETHERNET_INPUT();
-//        utils_log_info("%c", data);
+		utils_log_raw("%c", data);
         utils_buffer_push(&buffer_wifi_ethernet,&data);
     }
 #endif
@@ -300,6 +301,7 @@ bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
 			if(reset_buffer){
 				core_4g_buffer_index = 0;
 				memset(core_4g_buffer,0,BUFFER_MAX_SIZE);
+				utils_buffer_drop_all(&buffer_4g);
 			}
 			at_response_4g_indication = false;
 			break;
@@ -310,6 +312,7 @@ bool netif_core_atcmd_reset(netif_module_t module,  bool reset_buffer){
 			if(reset_buffer){
 				core_wifi_ethernet_buffer_index = 0;
 				memset(core_wifi_ethernet_buffer,0,BUFFER_MAX_SIZE);
+				utils_buffer_drop_all(&buffer_wifi_ethernet);
 			}
 			at_response_wifi_ethernet_indication = false;
 			break;

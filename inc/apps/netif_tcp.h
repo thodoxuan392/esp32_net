@@ -17,16 +17,16 @@ typedef struct
 	char* serverIp;
 	uint16_t serverPort;
 
-	void (*on_connect)(uint8_t errCode);
-	void (*on_disconnect)(uint8_t errCode);
-	void (*on_send)(uint8_t errCode);
+	bool loopDisable;
+
+	void (*on_receive_indication)(void);
 } netif_tcp_client_t;
 
 netif_status_t netif_tcp_init();
 netif_status_t netif_tcp_run();
 netif_status_t netif_tcp_deinit();
-netif_status_t netif_tcp_start();
-netif_status_t netif_tcp_stop();
+netif_status_t netif_tcp_start(netif_tcp_client_t* client);
+netif_status_t netif_tcp_stop(netif_tcp_client_t* client);
 netif_status_t netif_tcp_connect(netif_tcp_client_t* client);
 netif_status_t netif_tcp_disconnect(netif_tcp_client_t* client);
 netif_status_t netif_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint32_t dataLength);

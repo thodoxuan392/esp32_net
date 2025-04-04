@@ -45,6 +45,16 @@ netif_status_t netif_4g_deinit();
  */
 netif_status_t netif_4g_is_connected(bool *connected);
 
+/**
+ * @brief Get 4G Isms
+ */
+netif_status_t netif_4g_get_imsi(uint8_t *imsi, uint32_t* imsiSize);
+
+/**
+ * @brief Get 4G Iccid
+ */
+netif_status_t netif_4g_get_iccid(uint8_t *iccid, uint32_t* iccidSize);
+
 #endif
 
 #endif //NETIF_4G_H

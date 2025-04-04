@@ -52,7 +52,8 @@ static netif_status_t netif_wifi_ethernet_tcp_receive(netif_tcp_client_t* client
 													  uint32_t dataLength, uint32_t* readLength);
 static netif_status_t netif_wifi_ethernet_tcp_parse_on_receive(netif_tcp_client_t* client,
 															   uint8_t* data, uint32_t dataLength,
-															   uint32_t* readLength);
+															   uint32_t* readLength,
+															   uint32_t* remainLength);
 	#endif
 
 	#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
@@ -63,7 +64,8 @@ static netif_status_t netif_4g_tcp_disconnect(netif_tcp_client_t* client);
 static netif_status_t netif_4g_tcp_send(netif_tcp_client_t* client, uint8_t* data,
 										uint32_t dataLength);
 static netif_status_t netif_4g_tcp_receive(netif_tcp_client_t* client, uint8_t* data,
-										   uint32_t dataLength, uint32_t* readLength);
+										   uint32_t dataLength, uint32_t* readLength,
+										   uint32_t* remainLength);
 static netif_status_t netif_4g_tcp_parse_on_start(netif_tcp_client_t* client, uint8_t* errorCode);
 static netif_status_t netif_4g_tcp_parse_on_stop(netif_tcp_client_t* client, uint8_t* errorCode);
 static netif_status_t netif_4g_tcp_parse_on_connect(netif_tcp_client_t* client, uint8_t* linkNo,
@@ -73,7 +75,8 @@ static netif_status_t netif_4g_tcp_parse_on_disconnect(netif_tcp_client_t* clien
 static netif_status_t netif_4g_tcp_parse_on_send(netif_tcp_client_t* client, uint8_t* linkNo,
 												 uint32_t* reqSendLength, uint32_t* cnfSendLength);
 static netif_status_t netif_4g_tcp_parse_on_receive(netif_tcp_client_t* client, uint8_t* data,
-													uint32_t dataLength, uint32_t* readLength);
+													uint32_t dataLength, uint32_t* readLength,
+													uint32_t* remainLength);
 	#endif
 
 netif_status_t netif_tcp_init()
@@ -230,7 +233,7 @@ netif_status_t netif_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint32_
 	}
 }
 netif_status_t netif_tcp_receive(netif_tcp_client_t* client, uint8_t* data, uint32_t dataLength,
-								 uint32_t* readLength)
+								 uint32_t* readLength, uint32_t* remainLength)
 {
 	netif_manager_mode_t netmanager_mode = netif_manager_get_mode();
 	switch(netmanager_mode)
@@ -238,12 +241,13 @@ netif_status_t netif_tcp_receive(netif_tcp_client_t* client, uint8_t* data, uint
 		case NETIF_MANAGER_WIFI_MODE:
 	#if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 		case NETIF_MANAGER_ETHERNET_MODE:
-			return netif_wifi_ethernet_tcp_receive(client, data, dataLength, readLength);
+			return netif_wifi_ethernet_tcp_receive(client, data, dataLength, readLength,
+												   remainLength);
 			break;
 	#endif
 	#if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 		case NETIF_MANAGER_4G_MODE:
-			return netif_4g_tcp_receive(client, data, dataLength, readLength);
+			return netif_4g_tcp_receive(client, data, dataLength, readLength, remainLength);
 			break;
 	#endif
 		default:
@@ -475,7 +479,8 @@ netif_status_t netif_wifi_ethernet_tcp_send(netif_tcp_client_t* client, uint8_t*
 	return NETIF_IN_PROCESS;
 }
 netif_status_t netif_wifi_ethernet_tcp_receive(netif_tcp_client_t* client, uint8_t* data,
-											   uint32_t dataLength, uint32_t* readLength)
+											   uint32_t dataLength, uint32_t* readLength,
+											   uint32_t* remainLength)
 {
 	static uint8_t state = STATE_WIFI_ETHERNET_ETHERNET_TCP_DISCONNECT;
 	static uint8_t retry = 0;
@@ -508,8 +513,8 @@ netif_status_t netif_wifi_ethernet_tcp_receive(netif_tcp_client_t* client, uint8
 			{
 				if(response == NETIF_WIFI_ETHERNET_REPORT_TCP_CIP_RECV_DATA)
 				{
-					if(netif_wifi_ethernet_tcp_parse_on_receive(client, data, dataLength,
-																readLength) == NETIF_OK)
+					if(netif_wifi_ethernet_tcp_parse_on_receive(
+						   client, data, dataLength, readLength, remainLength) == NETIF_OK)
 					{
 						netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
 						retry = 0;
@@ -540,7 +545,8 @@ netif_status_t netif_wifi_ethernet_tcp_receive(netif_tcp_client_t* client, uint8
 
 static netif_status_t netif_wifi_ethernet_tcp_parse_on_receive(netif_tcp_client_t* client,
 															   uint8_t* data, uint32_t dataLength,
-															   uint32_t* readLength)
+															   uint32_t* readLength,
+															   uint32_t* remainLength)
 {
 }
 	#endif
@@ -1009,7 +1015,7 @@ netif_status_t netif_4g_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint
 	return NETIF_IN_PROCESS;
 }
 netif_status_t netif_4g_tcp_receive(netif_tcp_client_t* client, uint8_t* data, uint32_t dataLength,
-									uint32_t* readLength)
+									uint32_t* readLength, uint32_t* remainLength)
 {
 	static uint8_t state = STATE_4G_TCP_RX_GET;
 	static uint8_t retry = 0;
@@ -1054,8 +1060,8 @@ netif_status_t netif_4g_tcp_receive(netif_tcp_client_t* client, uint8_t* data, u
 			{
 				if(response == NETIF_4G_REPORT_TCP_CIP_RX_GET)
 				{
-					if(netif_4g_tcp_parse_on_receive(client, data, dataLength, readLength) ==
-					   NETIF_OK)
+					if(netif_4g_tcp_parse_on_receive(client, data, dataLength, readLength,
+													 remainLength) == NETIF_OK)
 					{
 						netif_core_atcmd_reset(NETIF_4G, true);
 						retry = 0;
@@ -1192,7 +1198,8 @@ static netif_status_t netif_4g_tcp_parse_on_send(netif_tcp_client_t* client, uin
 	return NETIF_IN_PROCESS;
 }
 static netif_status_t netif_4g_tcp_parse_on_receive(netif_tcp_client_t* client, uint8_t* data,
-													uint32_t dataLength, uint32_t* readLength)
+													uint32_t dataLength, uint32_t* readLength,
+													uint32_t* remainLength)
 {
 	static uint8_t onReceiveBuffer[4096];
 	static uint32_t onReceiveBufferLength = 0;
@@ -1218,6 +1225,7 @@ static netif_status_t netif_4g_tcp_parse_on_receive(netif_tcp_client_t* client, 
 													(uint32_t)outputBuffer[3],
 												"\r\n", outputBuffer2, 2, "OK"))
 			{
+				*remainLength = utils_string_to_int(outputBuffer2[0], strlen(outputBuffer2[0]));
 				strncpy(data, outputBuffer2[1], *readLength);
 			}
 			onReceiveBufferLength = 0;

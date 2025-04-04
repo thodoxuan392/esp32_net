@@ -31,7 +31,7 @@ netif_status_t netif_tcp_connect(netif_tcp_client_t* client);
 netif_status_t netif_tcp_disconnect(netif_tcp_client_t* client);
 netif_status_t netif_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint32_t dataLength);
 netif_status_t netif_tcp_receive(netif_tcp_client_t* client, uint8_t* data, uint32_t dataLength,
-								 uint32_t* readLength);
+								 uint32_t* readLength, uint32_t * remainLength);
 
 #endif
 #endif // NETIF_TCP_H

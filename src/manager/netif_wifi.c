@@ -32,7 +32,8 @@ static uint8_t fsm_retry = 0;
 /************************************ Internal Functions********************************/
 // Setting Command
 static char * setting_command[] = {
-	NETIF_ATCMD_WIFI_RECONNECT_CONFIG
+	NETIF_ATCMD_WIFI_RECONNECT_CONFIG,
+    NETIF_ATCMD_SINGLE_CONNECTION_MODE
 };
 
 static netif_status_t netif_wifi_fsm();

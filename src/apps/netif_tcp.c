@@ -496,8 +496,8 @@ netif_status_t netif_wifi_ethernet_tcp_receive(netif_tcp_client_t* client, uint8
 				// Clear Before Data
 				netif_core_atcmd_reset(NETIF_WIFI_ETHERNET, true);
 				// Send Client Config to AP to Wifi Module
-				size =
-					sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_TCP_DISCONNECT, client->clientNo);
+				size = sprintf(at_message, NETIF_ATCMD_WIFI_ETHERNET_TCP_RECV_DATA,
+							   client->clientNo, dataLength);
 				netif_core_wifi_ethernet_output(at_message, size);
 				state = STATE_WIFI_ETHERNET_ETHERNET_TCP_WAIT_FOR_RESPONSE;
 			}

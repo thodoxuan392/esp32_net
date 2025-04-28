@@ -23,4 +23,6 @@
 #define NETIF_ATCMD_WIFI_GET_IP         "AT+CIPSTA?\r\n"
 // Get Mac Address
 #define NETIF_ATCMD_WIFI_GET_MAC        "AT+CIPSTAMAC?\r\n"
+// Single Connection Mode
+#define NETIF_ATCMD_SINGLE_CONNECTION_MODE "AT+CIPMUX=0\r\n"
 #endif //NETIF_ATCMD_WIFI_H

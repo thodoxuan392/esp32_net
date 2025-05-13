@@ -601,7 +601,7 @@ netif_status_t netif_4g_tcp_start(netif_tcp_client_t* client)
 					{
 						netif_core_atcmd_reset(NETIF_4G, true);
 						state = STATE_4G_TCP_START;
-						if(errorCode == 0)
+						if((errorCode == 0) || (errorCode == 1))
 						{
 							retry = 0;
 							return NETIF_OK;
@@ -740,9 +740,19 @@ netif_status_t netif_4g_tcp_connect(netif_tcp_client_t* client)
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
 				netif_core_atcmd_reset(NETIF_4G, true);
-				// Send Connect Command to 4G Module
-				size = sprintf(at_message, NETIF_ATCMD_4G_TCP_CONNECT, client->clientNo,
-							   client->serverIp, client->serverPort, client->clientPort);
+				if(client->clientPort != -1)
+				{
+					// Send Connect Command to 4G Module
+					size = sprintf(at_message, NETIF_ATCMD_4G_TCP_CONNECT, client->clientNo,
+								   client->serverIp, client->serverPort, client->clientPort);
+				}
+				else
+				{
+					// Send Connect Command to 4G Module
+					size = sprintf(at_message, NETIF_ATCMD_4G_TCP_CONNECT_WO_LP, client->clientNo,
+								   client->serverIp, client->serverPort);
+				}
+
 				utils_log_debug(at_message);
 				netif_core_4g_output(at_message, size);
 				state = STATE_4G_TCP_WAIT_FOR_RESPONSE;

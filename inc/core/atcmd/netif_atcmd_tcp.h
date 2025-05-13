@@ -5,6 +5,7 @@
 #define NETIF_ATCMD_4G_TCP_START_SOCKET_SERVICE         "AT+NETOPEN\r\n"
 #define NETIF_ATCMD_4G_TCP_STOP_SOCKET_SERVICE          "AT+NETCLOSE\r\n"
 #define NETIF_ATCMD_4G_TCP_CONNECT                      "AT+CIPOPEN=%d,\"TCP\",\"%s\",%d,%d\r\n"
+#define NETIF_ATCMD_4G_TCP_CONNECT_WO_LP                "AT+CIPOPEN=%d,\"TCP\",\"%s\",%d\r\n"
 #define NETIF_ATCMD_4G_TCP_DISCONNECT                   "AT+CIPCLOSE=%d\r\n"
 #define NETIF_ATCMD_4G_TCP_SEND                         "AT+CIPSEND=%d,%d\r\n"
 #define NETIF_ATCMD_4G_TCP_SETUP_RX_DATA_MODE           "AT+CIPRXGET=1\r\n"

@@ -353,7 +353,6 @@ static netif_status_t netif_4g_setting(){
 	switch (setting_state) {
 	case STATE_4G_SETTING_SEND_COMMAND:
 		if(setting_index >= nb_setting_command){
-			_4g_connected = true;
 			// Reset Setting Command Idx
 			setting_index = 0;
 			return NETIF_OK;
@@ -527,6 +526,7 @@ static netif_status_t netif_4g_iccid(){
 static netif_status_t netif_4g_idle(){
 	netif_core_response_t response;
 	// If Get Initialize response -> Restart 4G
+	_4g_connected = true;
 	if(netif_core_atcmd_is_responded(NETIF_4G, &response)){
 		if(response == NETIF_4G_REPORT_INITIALIZE_DONE){
 			netif_core_atcmd_reset(NETIF_4G, true);

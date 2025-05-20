@@ -601,7 +601,7 @@ netif_status_t netif_4g_tcp_start(netif_tcp_client_t* client)
 					{
 						netif_core_atcmd_reset(NETIF_4G, true);
 						state = STATE_4G_TCP_START;
-						if((errorCode == 0) || (errorCode == 1))
+						if(errorCode == 0)
 						{
 							retry = 0;
 							return NETIF_OK;

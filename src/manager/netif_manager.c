@@ -109,6 +109,7 @@ netif_status_t netif_manager_run(){
  * @return netif_status_t Reset network
  */
 netif_status_t netif_manager_reset(){
+    netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
 #if defined(NETIF_WIFI_ETHERNET_ENABLE) && NETIF_WIFI_ETHERNET_ENABLE == 1
 	netif_wifi_reset();
 #endif
@@ -396,6 +397,7 @@ static void netif_manager_4g_mode(){
         }
         // If 4G dont have Connection -> Switch to Disconnected Mode
         else{
+            utils_log_info("Switch to NETIF_MANAGER_DISCONNECTED_MODE\r\n");
             netif_manager_mode = NETIF_MANAGER_DISCONNECTED_MODE;
         }
     }

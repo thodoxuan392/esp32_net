@@ -8,6 +8,7 @@
 
 #define NETIF_4G_IMSI_MAX_LENGTH 20
 #define NETIF_4G_ICCID_MAX_LENGTH 20
+#define NETIF_4G_CSQ_MAX_LENGTH 20
 
 // 4G main State
 enum {
@@ -67,8 +68,8 @@ static char * setting_command[] = {
     
 	NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE,
 	NETIF_ATCMD_4G_TCP_RX_POLLING_MODE,
-	NETIF_ATCMD_4G_GET_CSQ,
 	NETIF_ATCMD_4G_GET_CIPTIMEOUT,
+	NETIF_ATCMD_4G_AUTO_CSQ,
  };
 
 
@@ -100,6 +101,11 @@ static uint32_t _4g_iccid_length = 0;
 static bool _4g_iccid_completed = false;
 static uint8_t _4g_iccid_retry = 0;
 
+// Csq
+static uint8_t _4g_csq_rssi = 0;
+static uint8_t _4g_csq_ber = 0;
+static bool _4g_csq_receivedIndication = false;
+
 /************************************ Internal Functions********************************/
 
 
@@ -114,6 +120,7 @@ static netif_status_t netif_4g_idle();
 // Parser
 static netif_status_t netif_4g_parse_on_imsi(uint8_t* imsi, uint32_t *imsiSize);
 static netif_status_t netif_4g_parse_on_iccid(uint8_t* iccid, uint32_t *iccidSize);
+static netif_status_t netif_4g_parse_on_csq(uint8_t *rssi, uint8_t* ber);
 
 
 /**
@@ -259,6 +266,17 @@ netif_status_t netif_4g_get_iccid(uint8_t *iccid, uint32_t* iccidSize){
 	}
 	strncpy(iccid, _4g_iccid, _4g_iccid_length);
 	*iccidSize = _4g_iccid_length;
+	return NETIF_OK;
+}
+
+/**
+ * @brief Get 4G Signal Strength
+ */
+netif_status_t netif_4g_get_rssi(uint8_t *rssi){
+	if(!_4g_csq_receivedIndication){
+		return NETIF_FAIL;
+	}
+	*rssi = _4g_csq_rssi;
 	return NETIF_OK;
 }
 
@@ -545,6 +563,12 @@ static netif_status_t netif_4g_idle(){
 			netif_core_atcmd_reset(NETIF_4G, true);
 			return NETIF_FAIL;
 		}
+		else if(response == NETIF_4G_REPORT_CSQ){
+			if(netif_4g_parse_on_csq(&_4g_csq_rssi, &_4g_csq_ber) == NETIF_OK){
+				_4g_csq_receivedIndication = true;
+				netif_core_atcmd_reset(NETIF_4G, false);
+			}
+		}
 	}
 	return NETIF_OK;
 }
@@ -583,6 +607,33 @@ static netif_status_t netif_4g_parse_on_iccid(uint8_t* iccid, uint32_t *iccidSiz
 			*iccidSize = strlen(outputBuffer[0]);
 
 			onIccidBufferLength = 0;
+			return NETIF_OK;
+		}
+	}
+	return NETIF_IN_PROCESS;
+}
+
+static netif_status_t netif_4g_parse_on_csq(uint8_t *rssi, uint8_t* ber){
+	static uint8_t onCspBuffer[NETIF_4G_CSQ_MAX_LENGTH];
+	static uint32_t onCsqBufferLength = 0;
+
+	char* outputBuffer[2];
+	char* outputBuffer2[2];
+
+	if(netif_core_atcmd_get_data_after(NETIF_4G, &onCspBuffer[onCsqBufferLength++]))
+	{
+		if(utils_string_split_with_fixed_no(onCspBuffer, onCsqBufferLength, ",",
+											outputBuffer, 2, "OK"))
+		{
+			*rssi = utils_string_to_int(outputBuffer[0], strlen(outputBuffer[0]));
+			if(utils_string_split_with_fixed_no(outputBuffer[1],
+									(uint32_t)onCspBuffer + onCsqBufferLength -
+										(uint32_t)outputBuffer[1],
+									"\r\n", outputBuffer2, 2, "OK")){
+				*ber = utils_string_to_int(outputBuffer2[0], strlen(outputBuffer2[0]));
+			}
+
+			onCsqBufferLength = 0;
 			return NETIF_OK;
 		}
 	}

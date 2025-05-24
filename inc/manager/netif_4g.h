@@ -55,6 +55,11 @@ netif_status_t netif_4g_get_imsi(uint8_t *imsi, uint32_t* imsiSize);
  */
 netif_status_t netif_4g_get_iccid(uint8_t *iccid, uint32_t* iccidSize);
 
+/**
+ * @brief Get 4G Rssi
+ */
+netif_status_t netif_4g_get_rssi(uint8_t *rssi);
+
 #endif
 
 #endif //NETIF_4G_H

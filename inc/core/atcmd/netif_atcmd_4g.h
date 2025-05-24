@@ -12,10 +12,15 @@
 #define NETIF_ATCMD_4G_ECHO_DISABLE "ATE0\r\n"
 // Check Network Registration
 #define NETIF_ATCMD_4G_NETWORK_REGIS "AT+CREG\r\n"
+// Packet domain attach or detach
+#define NETIF_ATCMD_4G_CGATT "AT+CGATT=1\r\n"
+// ShowPDPaddress
+#define NETIF_ATCMD_4G_CGPADDR "AT+CGPADDR=1\r\n"
 // Define the PDP Context
 #define NETIF_ATCMD_4G_PDP_CONTEXT "AT+CGDCONT=1,\"IP\",\"v-internet\"\r\n"
 // Socket configuration
 #define NETIF_ATCMD_4G_SOCKET_CONFIG "AT+CGSOCKCONT=1,\"IP\",\"cmet\"\r\n"
+#define NETIF_ATCMD_4G_CSOCKSETPN "AT+CSOCKSETPN=1\r\n"
 // Disable TCP/IP Mode
 #define NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE "AT+CIPMODE=0\r\n"
 // Disable TCP/IP Mode
@@ -28,5 +33,9 @@
 #define NETIF_ATCMD_4G_GET_IMSI "AT+CIMI\r\n"
 // Get Iccid
 #define NETIF_ATCMD_4G_GET_ICCID "AT+CICCID\r\n"
+// Get network signal
+#define NETIF_ATCMD_4G_GET_CSQ "AT+CSQ\r\n"
+// Get TCP/IP timeout value
+#define NETIF_ATCMD_4G_GET_CIPTIMEOUT "AT+CIPTIMEOUT?\r\n"
 
 #endif // NETIF_ATCMD_ETHERNET_H

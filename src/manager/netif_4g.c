@@ -2,6 +2,7 @@
 #include "core/netif_core.h"
 #include "core/atcmd/netif_atcmd_4g.h"
 #include "utils_logger.h"
+#include "netif_opts.h"
 
 #if defined(NETIF_4G_ENABLE) && NETIF_4G_ENABLE == 1
 
@@ -51,12 +52,24 @@ enum {
 static char at_message[NETIF_ATCMD_BUFFER_SIZE];
 // Setting Command
 static char * setting_command[] = {
-    NETIF_ATCMD_4G_ECHO_DISABLE,
+	NETIF_ATCMD_4G_ECHO_DISABLE,
+	
+	NETIF_ATCMD_4G_NETWORK_REGIS,
+	NETIF_ATCMD_4G_CGATT,
+	NETIF_ATCMD_4G_CGPADDR,
+	
     NETIF_ATCMD_4G_PDP_CONTEXT,
     NETIF_ATCMD_4G_SOCKET_CONFIG,
     NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE,
+	NETIF_ATCMD_4G_SOCKET_CONFIG,
+
+	NETIF_ATCMD_4G_CSOCKSETPN,
+    
+	NETIF_ATCMD_4G_NON_TRANSPARENT_TCP_MODE,
 	NETIF_ATCMD_4G_TCP_RX_POLLING_MODE,
-};
+	NETIF_ATCMD_4G_GET_CSQ,
+	NETIF_ATCMD_4G_GET_CIPTIMEOUT,
+ };
 
 
 // Main state

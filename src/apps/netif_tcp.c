@@ -407,7 +407,7 @@ netif_status_t netif_wifi_ethernet_tcp_send(netif_tcp_client_t* client, uint8_t*
 			if(NETIF_GET_TIME_MS() - last_time_sent > NETIF_ATCMD_TIMEOUT)
 			{
 				state = STATE_WIFI_ETHERNET_ETHERNET_TCP_SEND;
-				utils_log_error("Mqtt publish timeout to receive input\r\n");
+				utils_log_error("TCP send data response timeout to receive input\r\n");
 				return NETIF_TIMEOUT;
 			}
 			if(netif_core_atcmd_is_responded(NETIF_WIFI_ETHERNET, &response))
@@ -922,7 +922,8 @@ netif_status_t netif_4g_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint
 			{
 				last_time_sent = NETIF_GET_TIME_MS();
 				// Clear Before Data
-				netif_core_atcmd_reset(NETIF_4G, true);
+				// netif_core_atcmd_reset(NETIF_4G, true); -- Don't clear data because RX Indication
+				// shall be triggered
 				// Send Connect Command to 4G Module
 				size = sprintf(at_message, NETIF_ATCMD_4G_TCP_SEND, client->clientNo, dataLength);
 				utils_log_debug(at_message);
@@ -968,7 +969,7 @@ netif_status_t netif_4g_tcp_send(netif_tcp_client_t* client, uint8_t* data, uint
 						state = STATE_4G_TCP_SEND;
 						return NETIF_FAIL;
 					}
-					utils_log_error("MQTT publish topic input got error, retrying ...\r\n");
+					utils_log_error("TCP send data response got error, retrying ...\r\n");
 					retry++;
 					state = STATE_4G_TCP_SEND;
 				}

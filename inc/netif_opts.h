@@ -92,7 +92,7 @@
 #define NETIF_ATCMD_TIMEOUT 10000 // 10000ms
 
 // Network Apps Retry Interval
-#define NETIF_APPS_RETRY_INTERVAL 200 // 200ms
+#define NETIF_APPS_RETRY_INTERVAL 5000 // 200ms
 
 // Network Retry Interval
 #define NETIF_MANAGER_RETRY_INTERVAL 5000 // 5000ms

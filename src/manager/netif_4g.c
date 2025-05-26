@@ -618,21 +618,14 @@ static netif_status_t netif_4g_parse_on_csq(uint8_t *rssi, uint8_t* ber){
 	static uint32_t onCsqBufferLength = 0;
 
 	char* outputBuffer[2];
-	char* outputBuffer2[2];
 
 	if(netif_core_atcmd_get_data_after(NETIF_4G, &onCspBuffer[onCsqBufferLength++]))
 	{
 		if(utils_string_split_with_fixed_no(onCspBuffer, onCsqBufferLength, ",",
-											outputBuffer, 2, "OK"))
+											outputBuffer, 2, "\r\n"))
 		{
 			*rssi = utils_string_to_int(outputBuffer[0], strlen(outputBuffer[0]));
-			if(utils_string_split_with_fixed_no(outputBuffer[1],
-									(uint32_t)onCspBuffer + onCsqBufferLength -
-										(uint32_t)outputBuffer[1],
-									"\r\n", outputBuffer2, 2, "OK")){
-				*ber = utils_string_to_int(outputBuffer2[0], strlen(outputBuffer2[0]));
-			}
-
+			*ber = utils_string_to_int(outputBuffer[1], strlen(outputBuffer[1]));
 			onCsqBufferLength = 0;
 			return NETIF_OK;
 		}

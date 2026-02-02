@@ -33,6 +33,11 @@
 #define NETIF_ATCMD_4G_GET_IMSI "AT+CIMI\r\n"
 // Get Iccid
 #define NETIF_ATCMD_4G_GET_ICCID "AT+CICCID\r\n"
+
+
+// Get signal strength
+#define NETIF_ATCMD_4G_CSQ "AT+CSQ\r\n"
+
 // Set auto response signal quality
 #define NETIF_ATCMD_4G_AUTO_CSQ "AT+AUTOCSQ=1,0\r\n"
 // Get TCP/IP timeout value

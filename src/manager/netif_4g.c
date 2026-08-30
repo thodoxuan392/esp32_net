@@ -70,7 +70,6 @@ static char * setting_command[] = {
 	NETIF_ATCMD_4G_TCP_RX_POLLING_MODE,
 	NETIF_ATCMD_4G_GET_CIPTIMEOUT,
 	NETIF_ATCMD_4G_AUTO_CSQ,
-
  };
 
 

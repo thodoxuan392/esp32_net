@@ -26,7 +26,7 @@
 	#error "Please defined NETIF_4G_ENABLE = 1 or NETIF_WIFI_ETHERNET_ENABLE = 1"
 #endif
 
-#define NETIF_USE_HTTP 0
+#define NETIF_USE_HTTP 1
 #define NETIF_USE_MQTT 0
 #define NETIF_USE_TCP 1
 
@@ -90,6 +90,14 @@
 
 // Network Command Timeout
 #define NETIF_ATCMD_TIMEOUT 10000 // 10000ms
+
+// Timeout for the 4G module's own HTTP GET to complete (AT+HTTPACTION's
+// unsolicited "+HTTPACTION:" report) -- unlike NETIF_ATCMD_TIMEOUT above,
+// this covers the whole download happening inside the module, which can
+// take well over 10s for a firmware-sized image.
+#ifndef NETIF_ATCMD_HTTP_ACTION_TIMEOUT
+#define NETIF_ATCMD_HTTP_ACTION_TIMEOUT 120000 // 120000ms
+#endif
 
 // Network Apps Retry Interval
 #define NETIF_APPS_RETRY_INTERVAL 2000 // 2000ms

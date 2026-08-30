@@ -81,6 +81,36 @@ netif_status_t netif_http_send_post_request(netif_http_request_t* request);
  */
 netif_status_t netif_http_send_put_request(netif_http_request_t* request);
 
+// --- Chunked download API (4G only) -----------------------------------
+// Purpose-built for pulling a large binary body (e.g. an OTA image) in
+// caller-controlled chunks, unlike netif_http_request_t's whole-body
+// callback shape above. All three are non-blocking state machines: call
+// repeatedly until they return something other than NETIF_IN_PROCESS.
+
+typedef struct
+{
+	char* url;
+	uint32_t contentLength; // filled in by netif_http_download_start() once the GET completes
+} netif_http_download_t;
+
+/**
+ * @brief Start a GET download: HTTPINIT + PARAM(CID,URL) + ACTION(GET).
+ *        Fills download->contentLength once the module reports completion.
+ */
+netif_status_t netif_http_download_start(netif_http_download_t* download);
+
+/**
+ * @brief Read `len` bytes of the downloaded body starting at `offset` into
+ *        `data` (caller-owned, must be >= len). Sets *readLen on success.
+ */
+netif_status_t netif_http_download_read(netif_http_download_t* download, uint32_t offset,
+										  uint8_t* data, uint32_t len, uint32_t* readLen);
+
+/**
+ * @brief Terminate the HTTP session (HTTPTERM).
+ */
+netif_status_t netif_http_download_stop(netif_http_download_t* download);
+
 #endif
 
 #endif

@@ -89,8 +89,9 @@ netif_status_t netif_tcp_run()
 	uint8_t* data;
 	size_t data_len;
 
-	// Disable loop
-	if(tcp_client->loopDisable)
+	// Disable loop -- tcp_client is only set once netif_tcp_start() runs
+	// (mirrors the tcp_client && ... check further down in this function).
+	if(tcp_client == NULL || tcp_client->loopDisable)
 	{
 		return NETIF_OK;
 	}

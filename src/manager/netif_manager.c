@@ -258,7 +258,7 @@ static void netif_manager_disconnect_mode(){
             if(_4g_connected){
             	utils_log_info("4G connected\r\n");
                 netif_manager_mode = NETIF_MANAGER_4G_MODE;
-                return NETIF_OK;
+                return;
             }
             // If 4G dont have Connection -> Step 1
             else{
@@ -286,7 +286,7 @@ static void netif_manager_disconnect_mode(){
             if(_ethernet_connected){
             	utils_log_info("Ethernet connected\r\n");
                 netif_manager_mode = NETIF_MANAGER_ETHERNET_MODE;
-                return NETIF_OK;
+                return;
             }
             // If Ethernet don't have Connection -> Step 2
             else{
@@ -312,7 +312,7 @@ static void netif_manager_disconnect_mode(){
             if(_wifi_connected){
             	utils_log_info("Wifi connected\r\n");
                 netif_manager_mode = NETIF_MANAGER_WIFI_MODE;
-                return NETIF_OK;
+                return;
             }else{
             	retry++;
             	if(retry > retry_time){
